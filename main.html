@@ -18,35 +18,36 @@
 		gCOM_HighlightColor = sColor;
 	}
 	function COM_HighlightWith(oCaller, sColor){
-	if(!gCOM_bMutex){
-	if(typeof oCaller != "undefined"){
-	oCaller.style.backgroundcolor = sColor;
-	}
-	}
+		if(!gCOM_bMutex){
+			if(typeof oCaller != "undefined"){
+				oCaller.style.backgroundcolor = sColor;
+			}
+		}
 	}
 	function COM_Highlight(oCaller){
-	if(!gCOM_bMutex){
-	if(typeof oCaller != "undefined"){
-	oCaller.style.backgroundcolor = gCOM_HighlightColor;
-	}
-	}
+		if(!gCOM_bMutex){
+			if(typeof oCaller != "undefined"){
+				oCaller.style.backgroundcolor = gCOM_HighlightColor;
+			}
+		}
 	}
 
 	function COM_UnHighlight(oCaller){
-	if(typeof oCaller != "undefined"){
-	oCaller.style.backgroundcolor = "";
-	}
+		if(typeof oCaller != "undefined"){
+			oCaller.style.backgroundcolor = "";
+		}
 	}
 
 	function NullHandler(vValue, bTrim){
-	If (vValue!=null){
-	If(bTrim = true){
-	return vValue.trim();
-	else
-	return vValue;
-	}
-	}
-	return "";
+		if (vValue!=null){
+			if(bTrim = true){
+				return vValue.trim();
+			}
+			else{
+				return vValue;
+			}
+		}
+		return "";
 	}
 
 	function Blank(vValue){
@@ -137,9 +138,9 @@
 		
 		if (!Blank(sXmlEnv) ){
 			var oXmlRespDoc = CreateObject("MSXML2.DOMDOCUMENT");//research
-			oXmlRespDoc.validateOnParse = False
-			oXmlRespDoc.resolveExternals = False
-			oXmlRespDoc.loadXML sXmlEnv
+			oXmlRespDoc.validateOnParse = false;
+			oXmlRespDoc.resolveExternals = false;
+			oXmlRespDoc.loadXML sXmlEnv;
 			
 			'- Get Result Text
 			If(oXmlRespDoc.parseError = 0) Then
