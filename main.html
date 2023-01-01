@@ -1,0 +1,1197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" >
+<HTML>
+	<HEAD>
+		<title>BMCIS Classic 4.8.40.0</title>
+		<meta name="vs_defaultClientScript" Canvas="VBScript" />
+		<link rel="stylesheet" type="text/css" href="/Resource/Stylesheets/Main.css"></link>
+		<script language="javascript" type="text/javascript">
+		<script language="vbscript" type="text/vbscript">
+	var gCOM_HighlightColor;
+	var gCOM_bMutex;
+
+	gCOM_bMutex = false;
+	gCOM_HighlightColor = "#FFFBD7";
+	function COM_SetMutex(bMutex){
+		gCOM_bMutex = bMutex;
+	}
+	function COM_SetHighlight(sColor){
+		gCOM_HighlightColor = sColor;
+	}
+	function COM_HighlightWith(oCaller, sColor){
+	if(!gCOM_bMutex){
+	if(typeof oCaller != "undefined"){
+	oCaller.style.backgroundcolor = sColor;
+	}
+	}
+	}
+	function COM_Highlight(oCaller){
+	if(!gCOM_bMutex){
+	if(typeof oCaller != "undefined"){
+	oCaller.style.backgroundcolor = gCOM_HighlightColor;
+	}
+	}
+	}
+
+	function COM_UnHighlight(oCaller){
+	if(typeof oCaller != "undefined"){
+	oCaller.style.backgroundcolor = "";
+	}
+	}
+
+	function NullHandler(vValue, bTrim){
+	If (vValue!=null){
+	If(bTrim = true){
+	return vValue.trim();
+	else
+	return vValue;
+	}
+	}
+	return "";
+	}
+
+	function Blank(vValue){
+		return vValue.trim().length == 0;
+	}
+
+	Function IsPortraitMode{
+		return window.screen.width < window.screen.height;
+	}
+
+	function LogError(sSource, sMethod, sDescrip){
+		var sServiceUrl, sParams;
+		sServiceUrl = window.location.protocol + "//" + window.location.HostName + "/BMCIS/Common/CisCommon.asmx";
+		sParams = "<sSource>" + sSource + "</sSource><sMethod>" + sMethod + "<sDescrip>" + sDescrip + "</sDescrip>";
+		// Send Error to be Logged
+		ExecuteSoapMethodNoReturn(sServiceUrl, "LogException", sParams);
+	}
+	function CreateSoapEnvelope(Namespace, MethodName, Params){
+		var sXmlEnv;
+		sXmlEnv  = "<?xml version='1.0' ?>";
+		sXmlEnv = sXmlEnv + "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'";
+		sXmlEnv = sXmlEnv + " xmlns:xsd='http://www.w3.org/2001/XMLSchema'";
+		sXmlEnv = sXmlEnv + " xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'>";
+		sXmlEnv = sXmlEnv + "<soap:Body>";
+		sXmlEnv = sXmlEnv + "<" + MethodName + " xmlns=" + Namespace + ">";
+		sXmlEnv = sXmlEnv + Params;
+		sXmlEnv = sXmlEnv + "</" + MethodName + "></soap:Body></soap:Envelope>"	;	
+		return sXmlEnv;
+	}
+	function CreateGenericSoapEnvelope(MethodName, Params){
+		var sXmlEnv;
+		sXmlEnv  = "<?xml version='1.0' ?>";
+		sXmlEnv = sXmlEnv + "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'";
+		sXmlEnv = sXmlEnv + " xmlns:xsd='http://www.w3.org/2001/XMLSchema'";
+		sXmlEnv = sXmlEnv + " xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'>";
+		sXmlEnv = sXmlEnv + "<soap:Body>";
+		sXmlEnv = sXmlEnv + "<" + MethodName + " xmlns='http://brandsmartusa.com/'>";
+		sXmlEnv = sXmlEnv + Params;
+		sXmlEnv = sXmlEnv + "</" + MethodName + "></soap:Body></soap:Envelope>";
+		return sXmlEnv;
+	}
+	function CreateParam(TagName, Value){
+		return "<" + TagName + "><![CDATA[" + Value + "]]></" + TagName + ">";
+	}
+	function CreateObject(){
+		XMLHttpRequestObject=false;
+		try {
+			XMLHttpRequestObject = new ActiveXObject("MSXML2.XMLHTTP");
+		} catch (exception1) {
+			try {
+				XMLHttpRequestObject = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exception2) {
+				XMLHttpRequestObject = false;
+			}
+		}
+		if (!XMLHttpRequestObject && window.XMLHttpRequest) {
+			XMLHttpRequestObject = new XMLHttpRequest();
+		}
+		return XMLHttpRequestObject;
+	}
+	function ExecuteSoapMethodNoReturn(ServiceUrl, MethodName, Params){
+		var oXmlHttp = CreateObject();
+		oXmlHttp.open("POST", ServiceUrl, true);
+		oXmlHttp.setRequestHeader("SOAPAction", "http://brandsmartusa.com/" + MethodName);
+		oXmlHttp.setRequestHeader("Content-Type", "text/xml; charset=utf-8");
+		oXmlHttp.send(CreateGenericSoapEnvelope(MethodName, Params));
+	}
+	function ExecSoapMethod(ServiceUrl, Namespace, MethodName, Params){
+		var oXmlHttp, oXmlRespDoc, oRtrnValNode;
+		var sXmlEnv;
+		
+		var return = "";
+		
+		var oXmlHttp = CreateObject();
+		oXmlHttp.open("POST", ServiceUrl, False);
+		oXmlHttp.setRequestHeader ("SOAPAction", "http://brandsmartusa.com/" + MethodName);
+		oXmlHttp.setRequestHeader("Content-Type", "text/xml; charset=utf-8");
+		
+		oXmlHttp.send(CreateSoapEnvelope(Namespace, MethodName, Params));
+		
+		sXmlEnv = oXmlHttp.ResponseText;
+		
+		if(typeof window.event != "undefined"){
+			if(window.event.ctrlkey){
+				window.clipboardData.setData("text", sXmlEnv);
+			}
+		}
+		
+		if (!Blank(sXmlEnv) ){
+			var oXmlRespDoc = CreateObject("MSXML2.DOMDOCUMENT");//research
+			oXmlRespDoc.validateOnParse = False
+			oXmlRespDoc.resolveExternals = False
+			oXmlRespDoc.loadXML sXmlEnv
+			
+			'- Get Result Text
+			If(oXmlRespDoc.parseError = 0) Then
+				Set oRtrnValNode = oXmlRespDoc.selectSingleNode("//" & MethodName & "Result")
+				If Not(oRtrnValNode Is Nothing) Then
+					ExecSoapMethod = oRtrnValNode.Text
+					if(Blank(ExecSoapMethod)) then
+						window.clipboardData.setData "text", sXmlEnv
+					end if
+				else
+					window.clipboardData.setData "text", sXmlEnv
+				End If
+			End If
+		End If
+		
+		'- Clean Up
+		Set oRtrnValNode = Nothing
+		Set oXmlRespDoc = Nothing
+		Set oXmlHttp = Nothing
+	}
+	
+</script>
+
+	
+	'---------------------------------------------------------------
+	'- ExecSoapMethod:  Posts the passed in parameters to 
+	'-		the specified web service and returns the result
+	'-		using www.brandsmartusa.com namespace.
+	'-
+	'- Inputs:
+	'-		ServiceUrl: WebServce URL
+	'-		Namespace:	Soap URI Namespace
+	'-		MethodName: WebService Method Name
+	'-		Params:		Soap Envelope Formatted Parameters
+	'- Outputs:
+	'-		Return Value:	Return Value from WebService Method
+	'-						in String format.
+	'-
+	Public Function ExecSoapMethod(ServiceUrl, Namespace, MethodName, Params)
+		dim oXmlHttp, oXmlRespDoc, oRtrnValNode
+		dim sXmlEnv
+		
+		'- Set Default Return Value
+		ExecSoapMethod = ""
+		
+		'- Instantiate HttpPost Object
+		Set oXmlHttp = CreateObject("MSXML2.XMLHTTP.3.0")
+		oXmlHttp.open "POST", ServiceUrl, False
+		'oXmlHttp.setRequestHeader "SOAPAction", "http://brandsmartusa.com" & MethodName
+		oXmlHttp.setRequestHeader "SOAPAction", "http://brandsmartusa.com/" & MethodName
+		oXmlHttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
+		
+		oXmlHttp.send CreateSoapEnvelope(Namespace, MethodName, Params)
+		
+		'- Get Return Value
+		sXmlEnv = oXmlHttp.ResponseText
+		
+		if(not window.event is nothing)then
+			if(window.event.ctrlkey = true)then
+				window.clipboardData.setData "text", sXmlEnv
+			end if
+		end if
+		
+		If Not Blank(sXmlEnv) Then
+			'- Load Result
+			Set oXmlRespDoc = CreateObject("MSXML2.DOMDOCUMENT")
+			oXmlRespDoc.validateOnParse = False
+			oXmlRespDoc.resolveExternals = False
+			oXmlRespDoc.loadXML sXmlEnv
+			
+			'- Get Result Text
+			If(oXmlRespDoc.parseError = 0) Then
+				Set oRtrnValNode = oXmlRespDoc.selectSingleNode("//" & MethodName & "Result")
+				If Not(oRtrnValNode Is Nothing) Then
+					ExecSoapMethod = oRtrnValNode.Text
+					if(Blank(ExecSoapMethod)) then
+						window.clipboardData.setData "text", sXmlEnv
+					end if
+				else
+					window.clipboardData.setData "text", sXmlEnv
+				End If
+			End If
+		End If
+		
+		'- Clean Up
+		Set oRtrnValNode = Nothing
+		Set oXmlRespDoc = Nothing
+		Set oXmlHttp = Nothing
+	End Function
+	
+	'---------------------------------------------------------------
+	'- ExecuteSoapMethod:  Posts the passed in parameters to 
+	'-		the specified web service and returns the result
+	'-
+	'- Inputs:
+	'-		ServiceUrl: WebServce URL
+	'-		MethodName: WebService Method Name
+	'-		Params:		Soap Envelope Formatted Parameters
+	'- Outputs:
+	'-		Return Value:	Return Value from WebService Method
+	'-						in String format.
+	'-
+	Public Function ExecuteSoapMethod(ServiceUrl, MethodName, Params)
+		dim oXmlHttp, oXmlRespDoc, oRtrnValNode
+		dim sXmlEnv
+		
+		'- Set Default Return Value
+		ExecuteSoapMethod = ""
+		
+		'- Instantiate HttpPost Object
+		Set oXmlHttp = CreateObject("MSXML2.XMLHTTP.3.0")
+		oXmlHttp.open "POST", ServiceUrl, False
+		'oXmlHttp.setRequestHeader "SOAPAction", "http://brandsmartusa.com" & MethodName
+		oXmlHttp.setRequestHeader "SOAPAction", "http://brandsmartusa.com/" & MethodName
+		oXmlHttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
+		
+		oXmlHttp.send CreateGenericSoapEnvelope(MethodName, Params)
+		
+		'- Get Return Value
+		sXmlEnv = oXmlHttp.ResponseText
+		
+		if(not window.event is nothing)then
+			if(window.event.ctrlkey = true)then
+				window.clipboardData.setData "text", sXmlEnv
+			end if
+		end if
+		
+		If Not Blank(sXmlEnv) Then
+			'- Load Result
+			Set oXmlRespDoc = CreateObject("MSXML2.DOMDOCUMENT")
+			oXmlRespDoc.validateOnParse = False
+			oXmlRespDoc.resolveExternals = False
+			oXmlRespDoc.loadXML sXmlEnv
+			
+			'window.clipboardData.setData "text", sXmlEnv
+			'alert sXmlEnv
+			
+			'- Get Result Text
+			If(oXmlRespDoc.parseError = 0) Then
+				Set oRtrnValNode = oXmlRespDoc.selectSingleNode("//" & MethodName & "Result")
+				If Not(oRtrnValNode Is Nothing) Then
+					ExecuteSoapMethod = oRtrnValNode.Text
+					if(Blank(ExecuteSoapMethod)) then
+						window.clipboardData.setData "text", sXmlEnv
+					end if
+				else
+					window.clipboardData.setData "text", sXmlEnv
+				End If
+			End If
+		End If
+		
+		'- Clean Up
+		Set oRtrnValNode = Nothing
+		Set oXmlRespDoc = Nothing
+		Set oXmlHttp = Nothing
+	End Function
+	
+	function COM_IsDate(strValue)
+		dim arrDate
+		if(len(strValue) > 7 and len(strValue) < 11)then
+			arrDate = split(strValue, "/")
+			if(ubound(arrDate) = 2)then
+				if(len(arrDate(0)) < 3 and len(arrDate(0)) > 0 and IsNumeric(arrDate(0)))then
+					if(len(arrDate(1)) < 3 and len(arrDate(1)) > 0 and IsNumeric(arrDate(1)))then
+						if(len(arrDate(2)) = 4)then
+							COM_IsDate = isDate(strValue)
+							exit function
+						end if
+					end if
+				end if
+			end if	
+		end if
+		COM_IsDate = false
+	end function
+	
+	Function DecodeHtml(sValue)
+		DecodeHtml = Replace(Replace(sValue,"&gt;",">"),"&lt;","<")
+	End Function
+	
+	Function GetOffsetHeight(object)
+		dim iHeight
+		dim oParent				
+		iHeight = 0
+		If Not(object Is Nothing) Then
+			Set oParent = object.offsetParent
+			While not(oParent is nothing)
+				iHeight = iHeight + oParent.offsetTop
+				Set oParent = oParent.offsetParent					
+			Wend
+		End If	
+		GetOffsetHeight = iHeight
+		set oParent = nothing
+	End Function
+	
+	Function GetOffsetLeft(object)
+		dim iLeft
+		dim oParent				
+		iLeft = 0
+		If Not(object Is Nothing) Then
+			iLeft = object.offsetLeft
+			Set oParent = object.ParentElement
+			While not(oParent is nothing)
+				iLeft = iLeft + oParent.offsetLeft
+				Set oParent = oParent.ParentElement
+			Wend
+		End If	
+		GetOffsetLeft = iLeft
+		set oParent = nothing
+	End Function
+	
+	function Find(sElementID)
+		set Find = document.getElementById(sElementID)
+	end function
+	
+	function FormatPhone(strPhone)
+		dim sTemp
+		dim iPos
+		'- strip out non numeric chars
+		iPos = 1
+		while(iPos <= Len(strPhone))
+			if(isNumeric(mid(strPhone,iPos,1))) then
+				sTemp = sTemp & mid(strPhone,iPos,1)
+			end if
+			iPos = iPos + 1
+		wend
+		'- format string
+		if(len(sTemp) = 10) then
+			FormatPhone = "(" & left(sTemp,3) & ") " & mid(sTemp,4,3) & "-" & mid(sTemp,7,4)
+		elseif(len(sTemp) = 7) then
+			sTemp = left(sTemp,3) & "-" & mid(sTemp,7,4)
+		else
+			FormatPhone = sTemp
+		end if
+	end function
+	
+	sub COM_TextBoxFocus(sCtrlID, bClear)
+		on error resume next
+		Find(sCtrlID).focus
+		if(bClear) then
+			Find(sCtrlID).value = ""
+		else
+			Find(sCtrlID).select
+		end if
+		on error goto 0
+	end sub
+	
+	function COM_NumericOnly(oEvent)
+		dim iKeyCode
+		
+		if not(oEvent.ctrlKey) then
+			iKeyCode = oEvent.keycode
+			if(iKeyCode>47 and iKeyCode<58) or(iKeyCode>95 and iKeyCode<106) or(iKeyCode=110) or(iKeyCode=190) then
+				if(window.event.shiftKey = true) then
+					window.event.cancelBubble = true
+					window.event.returnValue = false
+					COM_NumericOnly = false			
+				else
+					COM_NumericOnly = true
+				end if
+			else
+				'- not numeric
+				if(iKeyCode=46 or iKeyCode=8 or iKeyCode=9 or(iKeyCode>36 AND iKeyCode <41) or iKeyCode=27)then 
+					'- del, bksp, tab, arrow keys, or ESC
+					COM_NumericOnly = true
+				elseif(iKeyCode >= 37 and iKeyCode <=40)then
+					'- arrow keys
+					COM_NumericOnly = true
+					exit function
+				elseif(iKeyCode=16 or iKeyCode=17 or iKeyCode=35 or iKeyCode=36 or iKeyCode=45)then
+					COM_NumericOnly = true
+					exit function
+				else
+					window.event.cancelBubble = true
+					window.event.returnValue = false
+					COM_NumericOnly = false			
+				end if
+			end if
+		else
+			COM_NumericOnly = true
+		end if
+	end function
+	
+	function COM_DateCharsOnly(oEvent)
+		dim iKeyCode
+		iKeyCode = oEvent.keyCode
+		if(iKeyCode>47 and iKeyCode<58) or (iKeyCode>95 and iKeyCode<106) then
+			COM_DateCharsOnly = true
+			exit function
+		else
+			'- not numeric
+			if(iKeyCode=46 or iKeyCode=8 or iKeyCode=9 or iKeyCode=111 or iKeyCode=191 or iKeyCode = 27)then 
+				'- del, bksp, tab, /, keypad /
+				COM_DateCharsOnly = true
+				exit function
+			elseif(iKeyCode >= 37 and iKeyCode <=40)then
+				'- arrow keys
+				COM_DateCharsOnly = true
+				exit function
+			elseif(iKeyCode=110)then
+				oEvent.srcElement.value = oEvent.srcElement.value + "/"
+			elseif(iKeyCode=16 or iKeyCode=17 or iKeyCode=35 or iKeyCode=36 or iKeyCode=45)then
+				COM_DateCharsOnly = true
+				exit function
+			end if
+		end if
+		'- cancel event
+		oEvent.cancelBubble = true
+		oEvent.returnValue = false
+		COM_DateCharsOnly = false
+	end function
+	
+	sub COM_KeyUpFocus(oCaller,iLength,sFocusTo,iKeyCode)
+		if(len(oCaller.value)=iLength)then
+			if(not(iKeyCode=9) and not(iKeyCode=16))then
+				document.getElementById(sFocusTo).focus
+			end if
+		end if
+	end sub
+	
+	'- BEGIN: Loading Methods		
+	sub COM_ShowLoading()
+		on error resume next
+		if not(document.getElementById("ifLoading") is nothing) then
+			document.getElementById("ifLoading").style.top = document.body.clientHeight/2 - 39
+			document.getElementById("ifLoading").style.left = document.body.clientWidth/2 - 100
+			Find("ifLoading").style.display = "block"
+			Find("ifLoading").focus
+		end if
+		on error goto 0
+	end sub
+	sub COM_HideLoading()
+		if not(document.getElementById("ifLoading") is nothing) then
+			document.getElementById("ifLoading").style.display = "none"
+		end if
+	end sub
+	sub COM_HideLoadingTimeout()
+		window.setTimeout "COM_HideLoading",500,"vbscript"
+	end sub
+	'- END: Loading Methods
+	
+	sub ShowEmptyResponse()
+		msgbox "The Server was unable to process your request at this time.  Please submit your request again.",vbInformation,"Unable to Process Request"
+	end sub
+	function GetEmptyResponse()
+		GetEmptyResponse =(MsgBox("The Server was unable to process your request at this time.  Would you like to resubmit your request?",vbYesNo,"Resubmit Request") = VbYes)
+	end function
+	
+	'- NUGGET Show/Hide
+	sub ToggleNugget(oEvent)
+		dim oCaller, oTarget
+		
+		if(bMutex) then exit sub
+		set oCaller = oEvent.srcElement
+		set oTarget = oCaller.parentElement
+		'- make sure you have a ref to the row element
+		while(UCase(oTarget.tagName) <> "TR")
+			set oTarget = oTarget.parentElement
+		wend
+		'- set target to parent row first cell
+		set oCaller = oTarget.firstChild
+		'- get a ref to the next row
+		set oTarget = oTarget.nextSibling
+		'- update styles
+		if not(oTarget is nothing) then
+			if(LCase(oTarget.style.display) = "none") then
+				oTarget.style.display = "block"
+				oCaller.className = "NugHeadMinusWhBl"
+			else
+				oTarget.style.display = "none"
+				oCaller.className = "NugHeadPlusWhBl"
+			end if
+		else
+			msgbox "Unable to locate the Section to Toggle Display on.",vbExclamation,"Error"
+		end if
+		'- clean up
+		set oTarget = nothing
+		set oCaller = nothing
+	end sub
+	
+	sub MaxLength(oEvent,iMaxLen)
+		dim iKeyCode
+		iKeyCode = oEvent.keyCode
+		if(len(oEvent.srcElement.value) > iMaxLen-1)then
+			if not(iKeyCode=8) and not(iKeyCode>127) then
+				oEvent.cancelBubble = true
+				oEvent.returnValue = false
+			end if
+		end if
+	end sub
+	
+	sub PasteMaxLength(oEvent,iMaxLen)
+		dim iClipLen, iFieldLen
+		
+		iFieldLen = len(oEvent.srcElement.value)
+		iClipLen = len(window.clipboardData.getData("text"))
+		
+		if(iFieldLen + iClipLen > iMaxLen)then
+			if(iFieldLen < iMaxLen)then
+				oEvent.srcElement.value = oEvent.srcElement.value + left(window.clipboardData.getData("text"),iMaxLen-iFieldLen)
+			end if
+			oEvent.cancelBubble = true
+			oEvent.returnValue = false
+		end if
+	end sub
+	
+	sub COM_TabField(oCaller, sTargetId, oEvent)
+		dim iMaxLen
+		iMaxLen = NullHandler(oCaller.getAttribute("maxlength"),false)
+		if(IsNumeric(iMaxLen))then
+			if(oEvent.keyCode <> 9 and oEvent.keyCode <> 16)then
+				if(len(oCaller.value) >= iMaxLen)then
+					COM_TextboxFocus sTargetId, false
+				end if
+			end if
+		end if
+	end sub
+	
+	function COM_ValidateEmail(sEmail)
+		dim bValid
+		dim sValidChars, sChar
+		dim arrEmail
+		
+		sValidChars = "abcdefghijklmnopqrstuvwxyz.-_@0123456789"
+		bValid = false
+		arrEmail = Split(sEmail, "@")
+		'- perform checks
+		if(UBound(arrEmail) = 1)then
+			if(Len(arrEmail(0)) > 0 or Len(arrEmail(1)) > 3)then
+				if(Left(arrEmail(0),1) <> ".")then
+					if(Right(arrEmail(1),1) <> "." and Right(arrEmail(1),2) <> "..")then
+						if(InStr(1,arrEmail(1),".") > 0)then
+							if(InStr(1,arrEmail(1),"_") = 0)then
+								if(InStr(1,sEmail,"@.") = 0)then
+									if(InStr(1,sEmail,"..") = 0)then
+										bValid = true
+									end if
+								end if
+							end if
+						end if
+					end if
+				end if
+			end if
+		end if
+		'- loop through and check characters
+		if(bValid = true)then
+			for iPos = 1 to len(sEmail)
+				sChar = LCase(Mid(sEmail,iPos,1))
+				if(InStr(1,sValidChars,sChar) = 0)then
+					bValid = false
+				end if
+			next
+		end if
+		'- set return
+		COM_ValidateEmail = bValid
+	end function
+	
+	function COM_Unique()
+		COM_Unique = Year(Now()) & Month(Now()) & Day(Now()) & Hour(Now()) & Minute(Now()) & Second(Now())
+	end function
+	
+	function COM_CancelEvent()
+		window.event.returnValue = ""
+		window.event.cancelBubble = true
+	end function
+	
+	sub COM_ToggleTitlebar(oEvent)
+		dim oCaller, oTarget
+		dim sDisplay
+		
+		if(bMutex) then exit sub
+		
+		set oCaller = oEvent.srcElement
+		if(lCase(oCaller.className) = "titlebarminus")then
+			oCaller.className = "TitlebarPlus"
+			sDisplay = "block"
+		else
+			oCaller.className = "TitlebarMinus"
+			sDisplay = "none"
+		end if
+		
+		'- make sure you have a ref to the table element
+		set oTarget = oCaller.parentElement
+		while(UCase(oTarget.tagName) <> "TABLE")
+			set oTarget = oTarget.parentElement
+		wend
+		
+		'- get a ref to the next row
+		for i=1 to oTarget.Rows.Length - 1
+			oTarget.Rows(i).style.display = sDisplay
+		next
+		
+		'- clean up
+		set oTarget = nothing
+		set oCaller = nothing
+	end sub
+</script>
+		<script language="javascript" type="text/javascript" src="Resource/Scripts/Game.js"></script>
+		<script language="vbscript" type="text/vbscript">
+			const g_csBaseUrl = ""
+			const g_csHighlightColor = "#000000"
+			dim g_bHideMenuAfterNav
+			dim g_bClickMutex
+			dim g_oMenuSrch
+			dim g_csClientIp, g_csClientMachine
+			
+			g_csClientIp = "Unknown"
+			g_csClientMachine = "Unknown"
+			
+			g_bHideMenuAfterNav = true
+			
+			function document_onselectstart()
+				if(window.event.srcElement.tagName <> "INPUT")then
+					document_onselectstart = false
+				end if
+			end function
+			
+			function document_onkeydown()
+				if(window.event.keyCode = 116)then
+					'- disable F5
+					window.event.keyCode = 0
+					window.event.cancelBubble = true
+					document_onkeydown = false
+				end if
+			end function
+			
+			'- always on top
+			if not(window.location=window.top.location)then
+				window.top.location = window.location
+			end if
+			
+			sub SetPageTitle(sTitle)
+				document.getElementById("dvCanvasTitle").innerHtml = sTitle
+			end sub
+			
+			sub NavigateFrameToLocal(sName, sUrl)
+				SetPageTitle sName
+				HideMenu
+				document.getElementByID("ifCanvas").src = g_csBaseUrl & "loading.aspx?page=" & sUrl
+			end sub
+			
+			sub NavigateFrameTo(sName, sUrl)
+				SetPageTitle sName
+				HideMenu
+				document.getElementByID("ifCanvas").src = sUrl
+			end sub
+			
+			sub ToggleMenu(oToggleDiv)
+				dim oMenuCont
+				set oMenuCont = document.getElementById("tdMenuContainer")
+				if(uCase(oMenuCont.style.display)="NONE")then
+					oMenuCont.style.display = "block"
+					oToggleDiv.innerText = "Hide Menu"
+					oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Expand.gif)"
+					oToggleDiv.title = "Click to Hide/Collapse" & vbcrlf & "the Main Menu."
+				else
+					oMenuCont.style.display = "none"
+					oToggleDiv.innerText = "Show Menu"
+					oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Contract.gif)"
+					oToggleDiv.title = "Click to Show/Expand" & vbcrlf & "the Main Menu."
+				end if
+				set oMenuCont = nothing
+			end sub
+			
+			sub ToggleHighlight(oCaller, bHighlight)
+				if(bHighlight=true)then
+					oCaller.style.backgroundcolor = "#CEDBEF"
+					oCaller.style.color = "#000000"
+				else
+					oCaller.style.backgroundcolor = ""
+					oCaller.style.color = ""
+				end if
+			end sub
+			
+			public sub navToUnknownParent(MenuID, Url, Title, ShowLoading)
+				dim sParentID
+				dim oMenuItem
+				
+				set oMenuItem = Find("mnuIte_" & MenuID)
+				if not(oMenuItem is nothing) then
+					sParentID = oMenuItem.getAttribute("parentid")
+					call navigateTo(sParentID,MenuID,Url,Title,ShowLoading)
+				else
+					msgbox "Unable to locate Menu Item " & Title & "(" & MenuID & ")",vbCritical,"Menu Item Not Found"
+				end if
+			end sub
+			
+			public sub navigateTop(url)
+				window.location.href = url
+			end sub
+
+			public sub navigateTo(ParentID, MenuID, Url, Title, ShowLoading)
+				dim oMenuContainer
+				dim oMenuItem
+				
+				if g_bClickMutex then exit sub
+				g_bClickMutex = true
+				'- hide open menus
+				set oMenuContainer = document.getElementByID("mnu_" & ParentID)
+				'- does nothing if empty string passed in
+				call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
+				oMenuContainer.setAttribute "openmenuid", MenuID
+				set oMenuContainer = nothing
+				'- highlight selected
+				set oMenuItem = document.getElementByID("mnuIte_" & MenuID)
+				if not(oMenuItem is nothing) then
+					oMenuItem.style.color = g_csHighlightColor
+				end if
+				set oMenuItem = nothing
+				document.getElementByID("dvCanvasTitle").innerText = Title
+				
+				if(ShowLoading = "0") then
+					document.getElementByID("ifCanvas").src = Url
+				else
+					document.getElementByID("ifCanvas").src = "LoadingRing.aspx?" & Url
+				end if
+				
+				if(g_bHideMenuAfterNav) then
+					HideMenu
+				end if
+				
+				g_bClickMutex = false
+			end sub
+			
+			sub HideMenu
+				if(uCase(document.getElementById("tdMenuContainer").style.display) <> "NONE") then
+					ToggleMenu document.getElementById("dvToggleMenu")
+				end if
+			end sub
+			
+			sub ShowMenu
+				if(uCase(document.getElementById("tdMenuContainer").style.display) <> "BLOCK") then
+					ToggleMenu document.getElementById("dvToggleMenu")
+				end if
+			end sub
+			
+			sub OpenWindow(ParentID, MenuID, Link, Features, iShowLoading, Mulitple)
+				dim oMenuContainer,oWindow
+				dim strUrl
+				
+				if g_bClickMutex then exit sub
+				g_bClickMutex = true
+				'- hide open menus
+				set oMenuContainer = document.getElementByID("mnu_" & ParentID)
+				'- does nothing if empty string passed in
+				call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
+				oMenuContainer.setAttribute "openmenuid", MenuID
+				set oMenuContainer = nothing
+				
+				if(iShowLoading = 0)then
+					strUrl = Link
+				else
+					strUrl = "Loading.aspx?Page=" & Link
+				end if
+				
+				if(Mulitple = "1")then
+					set oWindow = window.open(strUrl, "_blank", Features)
+				else
+					set oWindow = window.open(strUrl, "win" & MenuID, Features)
+				end if
+				
+				on error resume next
+				oWindow.focus
+				on error goto 0
+				
+				set oWindow = nothing
+				g_bClickMutex = false
+			end sub
+			
+			sub closeSubMenu(MenuID)
+				dim oMenu
+				dim sOpenMenuID
+								
+				set oMenu = document.getElementByID("mnu_" & MenuID)
+				if not(oMenu is nothing) then
+					oMenu.style.display = "none"
+					sOpenID = nullHandler(oMenu.getAttribute("openmenuid"),true)
+					if not blank(sOpenID) then
+						oMenu.setAttribute "openmenuid",""
+						call closeSubMenu(sOpenID)
+					end if
+				end if
+				
+				set oMenu = document.getElementByID("mnuIte_" & MenuID)
+				if not(oMenu is nothing) then
+					oMenu.style.color = ""
+				end if
+				set oMenu = nothing
+			end sub
+			
+			sub showSubMenu(CallerParentID, MenuID, Title)
+				dim oParentMenu
+				dim oSubMenu
+				dim oMenuItem
+				
+				if g_bClickMutex then exit sub
+				g_bClickMutex = true
+				'- get ref to menu item to open
+				set oSubMenu = document.getElementByID("mnu_" & MenuID)
+				if not(oSubMenu is nothing) then
+					'- hide open menus
+					set oMenuContainer = document.getElementByID("mnu_" & CallerParentID)
+					'- does nothing if empty string passed in
+					call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
+					oMenuContainer.setAttribute "openmenuid", MenuID			
+					set oMenuContainer = nothing
+					
+					'- highlight selected
+					set oMenuItem = document.getElementByID("mnuIte_" & MenuID)
+					if not(oMenuItem is nothing) then
+						oMenuItem.style.color = g_csHighlightColor
+					end if
+					set oMenuItem = nothing
+					
+					oSubMenu.style.display = "block"
+					document.getElementByID("mnuTitle_" & MenuID).innerText = Title
+					oSubMenu.scrollIntoView
+			
+					'- clean up
+					set oSubMenu = nothing
+					set oParentMenu = nothing
+					set oMenuItem = nothing	
+				else
+					'- user has rights to menu group but no menu items in it
+					msgbox "The " & Title & " menu cannot be displayed because there are no Subitems for this Menu Item.",vbInformation,"Access"
+				end if
+				window.event.cancelBubble = true
+				g_bClickMutex = false
+			end sub
+			
+			sub toggleMenuBody(MenuID)
+				dim oMenuBodyDiv
+				
+				if g_bClickMutex then exit sub
+				g_bClickMutex = true
+					
+				set oMenuBodyDiv = document.getElementByID("mnuBody_" & MenuID)
+				if not(oMenuBodyDiv is nothing) then
+					if(nullHandler(oMenuBodyDiv.getAttribute("expanded"),true) = "0") then
+						oMenuBodyDiv.style.display = "block"
+						oMenuBodyDiv.setAttribute "expanded","1"
+						window.event.srcElement.className = "clsMenuTitle clsMenuTitleHide"
+					else
+						oMenuBodyDiv.style.display = "none"
+						oMenuBodyDiv.setAttribute "expanded","0"
+						window.event.srcElement.className = "clsMenuTitle clsMenuTitleShow"
+					end if
+				end if
+				
+				set oMenuBodyDiv = nothing
+				g_bClickMutex = false
+			end sub
+			
+			sub ValidateScreenRes
+				dim iWidth, iHeight
+				iWidth = window.screen.width
+				iHeight = window.screen.height
+				if(iWidth < 1024)then
+					MsgBox "The Minimum recommended Screen Resolution is 1024 by 768" & vbCrLf & vbCrLf & "Currently your Screen Resultion is: " & iWidth & " by " & iHeight & vbCrLf & vbcrlf & "If you would like your viewable screen area increased to" & vbcrlf & "reduce scrolling, please contact Support at 4164.",vbInformation,"Unrecommended Screen Resolution"
+				end if
+			end sub
+			
+			sub window_onLoad
+				g_bClickMutex = false
+				'- instantiate serach menu
+				Set g_oMenuSrch = window.createPopup
+				ValidateScreenRes
+				
+				document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx"
+			
+				SetToolTips
+			end sub
+			
+			sub SetToolTips()
+				Find("dvDesktopLink").title = "Click to Return to the BrandsMart" & vbCrLf & "Corportate Information Center Desktop"
+				Find("dvToggleMenu").title = "Click to Hide/Collapse" & vbcrlf & "the Main Menu"
+				Find("lnkName").title = "Click to Refresh Your Account Settings"
+			end sub
+			
+			sub GoToDesktop
+				'- does nothing if empty string passed in
+				call closeSubMenu(nullHandler(Find("mnu_0").getAttribute("openmenuid"),true))
+				Find("dvCanvasTitle").innerText = "BMCIS Desktop"
+				ShowMenu
+				document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx"
+			end sub
+			
+			sub showLoading()
+				on error resume next
+				document.getElementById("ifLoading").style.top = document.body.clientHeight/2 - 39
+				document.getElementById("ifLoading").style.left = document.body.clientWidth/2 - 100
+				on error goto 0
+			
+				Find("ifLoading").style.display = "block"
+				on error resume next
+				Find("ifLoading").focus
+				on error goto 0
+			end sub
+
+			sub hideLoading()
+				Find("ifLoading").style.display = "none"
+			end sub
+			sub hideLoadingTimeout()
+				window.setTimeout "hideLoading",500,"vbscript"
+			end sub
+			
+			sub StartSearch()
+				if g_bClickMutex then exit sub
+				call ShowLoading()
+				window.setTimeout "SubmitSearch",250,"vbscript"
+			end sub
+			
+			sub SubmitSearch()
+				if g_bClickMutex then exit sub
+				g_bClickMutex = true
+				
+				dim sSrch
+				dim sXmlResult
+				dim oResultsDoc
+				dim oHtmlNode
+				'dim iCounter
+				sSrch = document.getElementById("inSearch").value
+				if not blank(sSrch) then
+					sXmlResult = ExecuteSoapMethod("CisSystem/SrvCisSystem.asmx","Desktop_SearchMenu","<searchText>" & sSrch & "</searchText>")
+					if Not Blank(sXmlResult) then
+						g_oMenuSrch.Hide
+						g_oMenuSrch.document.body.innerHtml = decodeHtml(sXmlResult)
+						g_oMenuSrch.show(document.body.clientWidth - 298), 77, 300, 270, document.body
+					else
+						msgbox "Your search returned no results.",vbOkOnly,"Not Found"
+					end if
+					document.getElementById("inSearch").value = ""
+				end if
+				
+				hideLoadingTimeout
+				g_bClickMutex = false
+			end sub
+			
+			sub NavigateFromResult(MenuID)
+				dim oMenuItem
+				dim iParentID
+
+				iParentID = MenuID
+				while not(iParentID=0) or blank(iParentID)
+					set oMenuItem = document.getElementByID("mnuIte_" & iParentID)
+					if not(oMenuItem is nothing) then
+						iParentID = nullHandler(oMenuItem.getAttribute("parentid"),true)
+						oMenuItem.click
+					else
+						iParentID = 0
+					end if						
+				wend
+				'- clean up
+				set oMenuItem = nothing
+				g_oMenuSrch.hide
+			end sub
+			
+			public sub ToggleFullScreen(bShowBanner)
+				if(bShowBanner = true)then
+					document.getElementById("trBanner").style.display = "block"
+				else
+					sDisplay = "none"
+					document.getElementById("tdMenuContainer").style.display = "none"
+					document.getElementById("trBanner").style.display = "none"
+				end if
+			end sub
+		</script>
+		
+		<script language="javascript" type="text/javascript">
+			var g_chars = null;
+
+			var g_imgMario;
+			var g_iMarioLeft;
+			var g_iWinWidth;
+			var g_iStepTimeout;
+
+			function beginWalkMario() {
+				if (!g_imgMario) {
+					g_iStepTimeout = 15;
+					g_iWinWidth = document.body.clientWidth - 20;
+					g_iMarioLeft = 0;
+					g_imgMario = document.getElementById('imgMario');
+					g_imgMario.style.left = g_iMarioLeft;
+					g_imgMario.style.top = 20;
+					g_imgMario.style.display = "block";
+
+					g_chars = new Array();
+					for (var x = 0; x < 3; x++) {
+						g_chars[x] = new Character('imgGoomba' + x, g_iWinWidth);
+						g_chars[x].Init((g_iWinWidth - g_iWinWidth * (x + 10) / 100), 31, -1, 0);
+					}
+
+					window.setTimeout(walkMario, g_iStepTimeout);
+				}
+			}
+			function walkMario() {
+				if (g_iMarioLeft < g_iWinWidth) {
+					var charLeft = 0;
+					for (var x = 0; x < 3; x++) {
+						if (x == 0) {
+							charLeft = g_chars[x].XPos;
+						}
+						else if (g_chars[x].XPos < charLeft) {
+							charLeft = g_chars[x].XPos;
+						}
+					}
+
+					if (g_iMarioLeft < 151) {
+						// do nothing
+					}
+					else if (g_iMarioLeft > 147 && g_iMarioLeft < 232) {
+						g_imgMario.style.top = 32;
+					}
+					else if (g_iMarioLeft > 232 && g_iMarioLeft < 238) {
+						g_imgMario.style.top = 25;
+					}
+					else if (g_iMarioLeft > 237 && g_iMarioLeft < 242) {
+						g_imgMario.style.top = 19;
+					}
+					else if ((charLeft - g_iMarioLeft) < 25 && (charLeft - g_iMarioLeft) > -50) {
+						g_imgMario.style.top = 4;
+					}
+					else {
+						g_imgMario.style.top = 14;
+					}
+					g_iMarioLeft += 2;
+					g_imgMario.style.left = g_iMarioLeft;
+					window.setTimeout(walkMario, g_iStepTimeout);
+
+					UpdateCharacters(false);
+				}
+				else {
+					g_imgMario.style.display = "none";
+					g_imgMario = null;
+
+					UpdateCharacters(true);
+				}
+			}
+
+			function UpdateCharacters(terminate) {
+				if (g_chars != null) {
+					if (terminate) {
+						for (var x = 0; x < 3; x++) {
+							g_chars[x].Hide();
+						}
+						g_chars = null;
+					}
+					else {
+						for (var x = 0; x < 3; x++) {
+							g_chars[x].Update();
+							g_chars[x].Draw();
+						}
+					}
+				}
+			}
+		</script>
+	</HEAD>
+	<body style="cursor:default;">
+		<table cellpadding="0" cellspacing="0" border="0" class="clsBodyTblContainer">
+			<tr id="trBanner">
+				<td class="clsBodyTblHeader">
+					<table cellpadding="0" cellspacing="0" border="0" class="clsTblMax" style="table-layout:fixed">
+						<tr>
+							<td class="clsHeaderLeft">
+								<div id="dvDesktopLink" language="vbscript" onmouseenter="me.style.borderwidth=&#39;1px&#39;" onmouseleave="me.style.borderwidth=&#39;0px&#39;" title="Click to Return to the BrandsMart Corportate Information Center Desktop" onClick="javascript:document.getElementById(&#39;lnkName&#39;).click();" class="clsDesktopLinkDiv"></div>
+								<div id="dvToggleMenu" class="clsToggleMenu" language="vbscript" onClick="ToggleMenu me" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''">Hide Menu</div>
+							</td>
+							<td class="clsHeaderMiddle">
+								<div id="dvQA" class="clsCanvasTitleQA">Changes made here will not be reflected in Production.</div>
+								<div id="dvCanvasTitle" class="clsCanvasTitle">BMCIS Desktop</div>
+							</td>
+							<td class="clsHeaderRight">
+								<table cellpadding="0" cellspacing="0" border="0" class="clsHeaderRightLayout">
+									<tr>
+										<td class="clsHeaderRightTop">
+											<form name="frmMain" method="post" action="./Main.aspx" id="frmMain" style="MARGIN:0px">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwULLTE3MDI2MjQ2NzhkZKuYgTn6akPzzlq+3KU3zOIHtnbDB1mjgNJkiGxKTMD/" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['frmMain'];
+if (!theForm) {
+    theForm = document.frmMain;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="202EA31B" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAALNfjvIX/sjM2f2tIhIUHMQFl/4JtGpIacLnkBIiT8OGIOSXsDEbc80m7HI+Bms6M0aAVZv5FwsnMIZvIiUL0yM" />
+</div>
+												<a id="lnkName" class="clsHeaderLabel" href="javascript:__doPostBack(&#39;lnkName&#39;,&#39;&#39;)" style="CURSOR:default">Alvaro Michel Barrera (600812)</a>
+											</form>
+											<div style="MARGIN-TOP: 1px" ondblclick="javascript:beginWalkMario();">
+												<span id="lblDate" class="clsHeaderLabel">Tuesday, December 27, 2022</span>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<td class="clsHeaderRightBottom">
+											<table cellpadding="0" cellspacing="0" border="0" class="clsSearchContainer">
+												<tr>
+													<td class="clsSearchText">Menu Search:</td>
+													<td>
+														<input type="text" id="inSearch" class="clsSearchInput" language="vbscript" style="font-weight:normal;" onKeyPress="if(window.event.keyCode=13) then StartSearch" />
+													</td>
+													<td class="clsSearchButton" language="vbscript" onclick="StartSearch">
+														<span style="WIDTH:1px;HEIGHT:1px"></span>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td class="clsBodyTblCanvas">
+					<table cellpadding="0" cellspacing="0" border="0" class="clsTblMax">
+						<tr>
+							<td id="tdMenuContainer" class="clsMenuCell">
+								<div class="clsMenuScrollable">
+									<span id="lblNavBarSrc"><div openmenuid="" id="mnu_0" style="display:block;" class="clsMenuGroup"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" id="mnuTitle_0" onClick="toggleMenuBody '0'" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''">Main Menu</div><div class="clsMenuBody" id="mnuBody_0"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','20004','https://www.brandsmartusa.com','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=1024,height=710','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20004" parentid="0"><span>BrandsMartUSA.com</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','15477','https://sso.dayforcehcm.com/aan','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=900,center=1','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15477" parentid="0"><span>Dayforce</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','20227','https://outlook.office.com/mail/inbox','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=1600,height=900','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20227" parentid="0"><span>Email</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '0','10033','CisSystem/Searches/EmployeeInquiry.aspx','Employee Inquiry','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10033" parentid="0"><span>Employee Inquiry</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','20034','http://psflpkrn.bmusanet.brandsmartusa.com/wfc/navigator/logon','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20034" parentid="0"><span>Kronos</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','20235','https://interbond-sso.prd.mykronos.com/','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20235" parentid="0"><span>Kronos WFD</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '0','20236','https://bmusaprd-law-lsf01.cloud.infor.com/lawson/portal/','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20236" parentid="0"><span>Lawson</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '0','10136','Operations/Contacts/PhoneContacts.aspx','Phone Contacts','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10136" parentid="0"><span>Phone Contacts</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30029','Accounting'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30029" parentid="0"><span>Accounting</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30039','Asset Protection'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30039" parentid="0"><span>Asset Protection</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30011','Customer Service'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30011" parentid="0"><span>Customer Service</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30005','Deliveries'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30005" parentid="0"><span>Deliveries</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30130','Distributors'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30130" parentid="0"><span>Distributors</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','31154','Emails'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_31154" parentid="0"><span>Emails</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30009','Executive'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30009" parentid="0"><span>Executive</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30036','External Web'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30036" parentid="0"><span>External Web</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30138','FPL'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30138" parentid="0"><span>FPL</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30008','Human Resources'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30008" parentid="0"><span>Human Resources</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30026','Inventory Control'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30026" parentid="0"><span>Inventory Control</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30020','Lawson'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30020" parentid="0"><span>Lawson</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','31156','Marketing'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_31156" parentid="0"><span>Marketing</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30010','Merchants'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30010" parentid="0"><span>Merchants</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30018','MIS'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30018" parentid="0"><span>MIS</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30037','Request Forms'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30037" parentid="0"><span>Request Forms</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30024','Sales Floor'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30024" parentid="0"><span>Sales Floor</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30016','Stores'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30016" parentid="0"><span>Stores</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30038','Training'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30038" parentid="0"><span>Training</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '0','30094','Warehouse'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30094" parentid="0"><span>Warehouse</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30029" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30029" onClick="toggleMenuBody '30029'">Accounting</div><div class="clsMenuBody" id="mnuBody_30029"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30029','10091','https://cis-devex.bmusanet.brandsmartusa.com/Accounting/ArCodesMaintenance.aspx','Pay Codes','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10091" parentid="30029"><span>Pay Codes</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30029','30114','Commissions'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30114" parentid="30029"><span>Commissions</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30029','30054','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30054" parentid="30029"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30114" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30114" onClick="toggleMenuBody '30114'">Commissions</div><div class="clsMenuBody" id="mnuBody_30114"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30114','15172','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAccounting%2fCommission%2fCommission+Detail+by+Customer+Id&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15172" parentid="30114"><span>Commission Detail by Customer Id</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30114','15173','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAccounting%2fCommission%2fCommission+Detail+by+Invoice+Number&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15173" parentid="30114"><span>Commission Detail by Invoice Number</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30114','15174','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAccounting%2fCommission%2fCommission+Detail+by+Lawson+ID&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15174" parentid="30114"><span>Commission Detail by Lawson Id</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30054" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30054" onClick="toggleMenuBody '30054'">Reports</div><div class="clsMenuBody" id="mnuBody_30054"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30054','15299','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAccounting%2fAccounts+Receivable%2fAR+Transaction+Lookup&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15299" parentid="30054"><span>AR Transaction Lookup</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30039" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30039" onClick="toggleMenuBody '30039'">Asset Protection</div><div class="clsMenuBody" id="mnuBody_30039"><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30039','30083','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30083" parentid="30039"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30083" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30083" onClick="toggleMenuBody '30083'">Reports</div><div class="clsMenuBody" id="mnuBody_30083"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30083','15271','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAsset+Protection%2fActive+Badge+Swipes&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15271" parentid="30083"><span>Active Badge Swipes</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30083','10175','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAsset+Protection%2fCarry-Out+Receipts+Scanned&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10175" parentid="30083"><span>Carry-Out Receipts Scanned</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30083','10174','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAsset+Protection%2fCarry-Out+Receipts+Scanned+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10174" parentid="30083"><span>Carry-Out Receipts Scanned Detail</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30011" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30011" onClick="toggleMenuBody '30011'">Customer Service</div><div class="clsMenuBody" id="mnuBody_30011"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30011','15200','https://cis-devex.bmusanet.brandsmartusa.com/CustomerService/CustomerSearch.aspx','ATG - Customers','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_15200" parentid="30011"><span>ATG - Customers</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30011','10029','CustomerService/CustomerSummary.aspx','Customer Summary','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10029" parentid="30011"><span>Customer Summary</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30011','20239','https://fgo-brandsmart.dispatchtrack.com/','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20239" parentid="30011"><span>New FGO Delivery Atl</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30011','20238','https://ryder-brandsmart.dispatchtrack.com','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20238" parentid="30011"><span>New Ryder DispatchTrack FL</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30011','20237','https://ptglogistics.dispatchtrack.com/login','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20237" parentid="30011"><span>PTG DispatchTrack GA</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30011','20233','https://mxd.dispatchtrack.com/home','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20233" parentid="30011"><span>Ryder Dispatchtrack FL</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30011','10057','CustomerService/Receipts/Receipts.aspx','Store Receipt Viewer','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10057" parentid="30011"><span>Store Receipt Viewer</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30011','30124','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30124" parentid="30011"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30124" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30124" onClick="toggleMenuBody '30124'">Reports</div><div class="clsMenuBody" id="mnuBody_30124"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30124','15380','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fGift+Cards%2fGift+Cards+by+InvNum&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15380" parentid="30124"><span>Gift Cards by InvNum</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30005" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30005" onClick="toggleMenuBody '30005'">Deliveries</div><div class="clsMenuBody" id="mnuBody_30005"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30005','15163','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fDeliveries%2fDeliveries+by+Ship+Date+-+FL&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1500,height=650,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15163" parentid="30005"><span>Deliveries by Ship Date - FL</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30005','15164','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fDeliveries%2fDeliveries+by+Ship+Date+-+GA&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1500,height=650,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15164" parentid="30005"><span>Deliveries by Ship Date - GA</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30005','15475','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fDeliveries%2fDeliveries+by+Ship+Date+-+MCC&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15475" parentid="30005"><span>Deliveries by Ship Date - MCC</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30005','15456','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS%20Reports%2fDeliveries%2fDelivery+Allocation&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1500,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15456" parentid="30005"><span>Delivery Allocation</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30005','15455','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS%20Reports%2fDeliveries%2fDelivery+Allocation+by+Item&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1500,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15455" parentid="30005"><span>Delivery Allocation by Item</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30130" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30130" onClick="toggleMenuBody '30130'">Distributors</div><div class="clsMenuBody" id="mnuBody_30130"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30130','10366','https://cis-devex.bmusanet.brandsmartusa.com/Distributors/SkuCategoryMap.aspx','SKU Category Map','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10366" parentid="30130"><span>SKU Category Map</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30130','10373','https://cis-devex.bmusanet.brandsmartusa.com/Distributors/','SKU Feature Map','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10373" parentid="30130"><span>SKU Feature Map</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30130','10372','https://cis-devex.bmusanet.brandsmartusa.com/Distributors/SkuManufacturerMap.aspx','SKU Manufacturer Map','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10372" parentid="30130"><span>SKU Manufacturer Map</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30130','30135','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30135" parentid="30130"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30135" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30135" onClick="toggleMenuBody '30135'">Reports</div><div class="clsMenuBody" id="mnuBody_30135"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30135','15344','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fDistributors%2fSku+Unmapped+Categories&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15344" parentid="30135"><span>Sku Unmapped Categories</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30135','15343','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fDistributors%2fSku+Unmapped+Manufacturers&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15343" parentid="30135"><span>Sku Unmapped Manufacturer</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_31154" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_31154" onClick="toggleMenuBody '31154'">Emails</div><div class="clsMenuBody" id="mnuBody_31154"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '31154','15317','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fEmails%2fEmails+by+Pay+Code&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15317" parentid="31154"><span>Emails by Pay Code</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '31154','15369','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fEmails%2fEmails+by+Source&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15369" parentid="31154"><span>Emails by Source</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '31154','15413','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fEmails%2fEmails+Entered+By+Sales+Specialist&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15413" parentid="31154"><span>Emails Entered By Sales Specialists</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '31154','15412','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fEmails%2fEmails+Entered+Stats&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1400,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15412" parentid="31154"><span>Emails Entered Stats</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '31154','15414','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fEmails%2fEmails+Entered+Stats+By+Sales+Specialist&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15414" parentid="31154"><span>Emails Entered Stats By Sales Specialist</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30009" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30009" onClick="toggleMenuBody '30009'">Executive</div><div class="clsMenuBody" id="mnuBody_30009"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30009','10378','https://cis-devex.bmusanet.brandsmartusa.com/Utilities/CashIn.aspx','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10378" parentid="30009"><span>Cash In</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30009','15332','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fSales+Analysis%2fCash+In+By+Hour&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15332" parentid="30009"><span>Cash-In by Hour</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30009','30025','Audit Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30025" parentid="30009"><span>Audit Reports</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30009','30012','Control Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30012" parentid="30009"><span>Control Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30025" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30025" onClick="toggleMenuBody '30025'">Audit Reports</div><div class="clsMenuBody" id="mnuBody_30025"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30025','10086','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fSystem%2fBell+Answered+Report&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10086" parentid="30025"><span>Bell Answered Report</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30025','15284','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fExecutive%2fStore Gift Card Payments&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15284" parentid="30025"><span>Store Gift Card Payments </span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30012" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30012" onClick="toggleMenuBody '30012'">Control Reports</div><div class="clsMenuBody" id="mnuBody_30012"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','15379','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fControl+Reports%2fFinance+Promo+Overrides&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15379" parentid="30012"><span>Finance Promo Overrides</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','15377','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fFoot+Traffic+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15377" parentid="30012"><span>Foot Traffic Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','10026','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fControl+Reports%2fOrders+In+Transit&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10026" parentid="30012"><span>Orders In Transit</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','15396','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fControl+Reports%2fSales+Below+SBCost&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15396" parentid="30012"><span>Sales Below SBCost</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','15221','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fControl+Reports%2fShipped+Serial+Numbers&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15221" parentid="30012"><span>Shipped Serial Numbers</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30012','15291','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fExecutive%2fUPP+Sales&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15291" parentid="30012"><span>UPP Sales</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30036" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30036" onClick="toggleMenuBody '30036'">External Web</div><div class="clsMenuBody" id="mnuBody_30036"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30036','10203','ExternalWeb/Products/ProductSummary.aspx','Product Viewer','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10203" parentid="30036"><span>Product Viewer</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30036','30118','ATG Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30118" parentid="30036"><span>ATG Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30118" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30118" onClick="toggleMenuBody '30118'">ATG Reports</div><div class="clsMenuBody" id="mnuBody_30118"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15286','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Cancelled+Delivery+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15286" parentid="30118"><span>ATG - Cancelled Delivery Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15287','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Cancelled+Delivery+Summary&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15287" parentid="30118"><span>ATG - Cancelled Delivery Summary</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15282','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Open+ISP+Order+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15282" parentid="30118"><span>ATG - Open ISP Order Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15231','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Open+ISP+Orders&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15231" parentid="30118"><span>ATG - Open ISP Orders</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15281','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Price+Adjustments&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15281" parentid="30118"><span>ATG - Price Adjustments</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30118','15279','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fATG+Reports%2fATG+-+Returns+Manifest&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15279" parentid="30118"><span>ATG - Returns Manifest</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30138" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30138" onClick="toggleMenuBody '30138'">FPL</div><div class="clsMenuBody" id="mnuBody_30138"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30138','15353','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fFPL%2fFPL+Energy+Systems+Commissions+by+Date&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15353" parentid="30138"><span>FPL Commissions by Date</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30138','15358','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fFPL%2fFPL+Energy+Systems+Sale+by+Id&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15358" parentid="30138"><span>FPL Sale by Id</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30138','15357','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fFPL%2fFPL+Energy+Systems+Sales+by+Issue+Date&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15357" parentid="30138"><span>FPL Sales by Issue Date</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30008" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30008" onClick="toggleMenuBody '30008'">Human Resources</div><div class="clsMenuBody" id="mnuBody_30008"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','15183','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fHuman+Resources%2f401K+Fee+notification.pdf&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15183" parentid="30008"><span>401K Fee Notification</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','15127','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fHuman+Resources%2f401K+Summary+Plan+Description.pdf&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15127" parentid="30008"><span>401K Summary Plan Description</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20241','https://www.millimanbenefits.com/','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20241" parentid="30008"><span>401K-Milliman Enrollment</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20008','http://www.securianretirementcenter.com','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20008" parentid="30008"><span>401K-Old Securian</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20180','https://ipay.adp.com','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20180" parentid="30008"><span>ADP iPay</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20207','https://www.aetna.com/index.html','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20207" parentid="30008"><span>Aetna</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20234','&quot;C:\Program Files (x86)\Google\Chrome\Application\chrome.exe&quot; &quot;https://tcs.adp.com/txcs-ui/screening/?cc=brandsmart&quot;','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20234" parentid="30008"><span>Brandsmart USA Work Opportunity Tax Credit Questio</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20208','http://www.coloniallife.com','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20208" parentid="30008"><span>Colonial Life</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30008','20229','https://www.payflex.com/','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20229" parentid="30008"><span>PayFlex HSA</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30026" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30026" onClick="toggleMenuBody '30026'">Inventory Control</div><div class="clsMenuBody" id="mnuBody_30026"><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30026','30104','Inquiries'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30104" parentid="30026"><span>Inquiries</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30026','30027','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30027" parentid="30026"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30104" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30104" onClick="toggleMenuBody '30104'">Inquiries</div><div class="clsMenuBody" id="mnuBody_30104"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30104','15111','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fItem+Sales+Tracking&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15111" parentid="30104"><span>Item Sales Tracking</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30104','15335','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS%20Reports/Inventory/Item%20Tracking&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1050,height=800,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15335" parentid="30104"><span>Item Tracking</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30027" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30027" onClick="toggleMenuBody '30027'">Reports</div><div class="clsMenuBody" id="mnuBody_30027"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30027','10035','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fNew+Items&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1300,height=650,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10035" parentid="30027"><span>New Items</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30020" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30020" onClick="toggleMenuBody '30020'">Lawson</div><div class="clsMenuBody" id="mnuBody_30020"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30020','20010','https://bmusaprd-law-lsf01.cloud.infor.com/lawson/portal/index.htm','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20010" parentid="30020"><span>Lawson Portal</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30020','30106','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30106" parentid="30020"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30106" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30106" onClick="toggleMenuBody '30106'">Reports</div><div class="clsMenuBody" id="mnuBody_30106"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30106','15108','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fLawson%2fApplication+Status&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15108" parentid="30106"><span>Application Status</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_31156" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_31156" onClick="toggleMenuBody '31156'">Marketing</div><div class="clsMenuBody" id="mnuBody_31156"><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '31156','30028','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30028" parentid="31156"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30028" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30028" onClick="toggleMenuBody '30028'">Reports</div><div class="clsMenuBody" id="mnuBody_30028"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30028','15433','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAdvertising%2fRaffle+Collected+by+Store&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15433" parentid="30028"><span>Raffle Collected by Store</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30010" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30010" onClick="toggleMenuBody '30010'">Merchants</div><div class="clsMenuBody" id="mnuBody_30010"><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30010','30091','Maintenance'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30091" parentid="30010"><span>Maintenance</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30010','30035','Merchant Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30035" parentid="30010"><span>Merchant Reports</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30010','30116','Sales Analysis'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30116" parentid="30010"><span>Sales Analysis</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30091" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30091" onClick="toggleMenuBody '30091'">Maintenance</div><div class="clsMenuBody" id="mnuBody_30091"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30091','10214','Merchants/Inventory/CodeMaintenance.aspx','Code Maintenance','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10214" parentid="30091"><span>Code Maintenance</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30035" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30035" onClick="toggleMenuBody '30035'">Merchant Reports</div><div class="clsMenuBody" id="mnuBody_30035"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30035','15311','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fActive+GE+Promos&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15311" parentid="30035"><span>GE Active Promos </span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30035','15304','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fGM+Price+Changesl&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1200,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15304" parentid="30035"><span>GM Price Changes Report</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30035','15262','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fModel+Promo&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15262" parentid="30035"><span>Model Promo</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30035','15168','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fTax-Free+Items+Inventory&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15168" parentid="30035"><span>Tax-Free Items Inventory</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30035','15087','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fWarranty+Groups&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=700,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15087" parentid="30035"><span>Warranty Groups</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30116" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30116" onClick="toggleMenuBody '30116'">Sales Analysis</div><div class="clsMenuBody" id="mnuBody_30116"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30116','15384','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fSales+Analysis%2fCalendar+Month+Sales+by+Year&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=800,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15384" parentid="30116"><span>Calendar Month Sales by Year</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30116','15385','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fSales+Analysis%2fCalendar+Week+Sales+by+Year&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=800,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15385" parentid="30116"><span>Calendar Week Sales by Year</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30018" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30018" onClick="toggleMenuBody '30018'">MIS</div><div class="clsMenuBody" id="mnuBody_30018"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30018','15228','https://cis-devex.bmusanet.brandsmartusa.com/POS/BadgeTest.aspx','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=550,height=200,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15228" parentid="30018"><span>Badge Test</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30037" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30037" onClick="toggleMenuBody '30037'">Request Forms</div><div class="clsMenuBody" id="mnuBody_30037"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30037','10161','Operations/MIS/Forms/AbsenceForm.aspx','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=650,height=690','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10161" parentid="30037"><span>Absence Request Form</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30037','10177','Operations/MIS/Forms/EmployeeUpdateRequests.aspx','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=1500,height=700','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10177" parentid="30037"><span>Employee Update Request Form</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30037','10060','Operations/Tasks/RequestForms/LongDistanceRequest.aspx','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=650,height=750','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10060" parentid="30037"><span>Long Distance Request</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30024" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30024" onClick="toggleMenuBody '30024'">Sales Floor</div><div class="clsMenuBody" id="mnuBody_30024"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30024','15225','https://cis-devex.bmusanet.brandsmartusa.com/POS/StorePickup.aspx','ATG - Store Pickup','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_15225" parentid="30024"><span>ATG - Store Pickup</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30024','10063','SalesFloor/CommissionDetail.aspx','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1200,height=800','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10063" parentid="30024"><span>Commission Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30024','10327','SalesFloor/Signs.aspx','Signs','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10327" parentid="30024"><span>Signs</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30024','30109','Cable TV Activations'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30109" parentid="30024"><span>Cable TV Activations</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30024','30099','Cell Phone Activations'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30099" parentid="30024"><span>Cell Phone Activations</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30024','30113','Home Phone Activations'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30113" parentid="30024"><span>Home Phone Activations</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30024','30115','Satellite TV Activations'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30115" parentid="30024"><span>Satellite TV Activations</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30109" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30109" onClick="toggleMenuBody '30109'">Cable TV Activations</div><div class="clsMenuBody" id="mnuBody_30109"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30109','20203','\\srv-fileserver\Retail Operations\Merchant\Telecomm\U-Verse\uverse final LMT tool.xlsm','U Verse Plans','0'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_20203" parentid="30109"><span>U Verse Plans</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30099" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30099" onClick="toggleMenuBody '30099'">Cell Phone Activations</div><div class="clsMenuBody" id="mnuBody_30099"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20163','https://tlgposdotcom.cingular.com/v2/Login.html','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20163" parentid="30099"><span>AT&amp;T POS</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20182','https://www.boostmobilesales.com/boost-sales-portal/faces/login.jsp','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20182" parentid="30099"><span>Boost Mobile Sales</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20183','https://webpos.payspot.com/pcs','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20183" parentid="30099"><span>Boost Mobile WebPos</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20200','https://smart.mysimplemobile.com/POS/','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20200" parentid="30099"><span>Simple Mobile POS</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20189','https://icam.t-mobile.com/index.jsp','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20189" parentid="30099"><span>T-Mobile ICam</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20190','http://watson.t-mobile.com/index.html','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20190" parentid="30099"><span>T-Mobile Watson</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20191','http://www.targetmobilestore.com/ecommerce/upgradeeligibility.aspx?wmode=popup&amp;r=BullseyeMobileSolutions&amp;viewmode=1','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20191" parentid="30099"><span>Upgrade Eligibility Check</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30099','20184','https://www1.virginmobileusa.com/retailer/activation.do?assoc=123&amp;retailer=10999&amp;store=0018000000b8rxNAAQ','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20184" parentid="30099"><span>Virgin Mobile </span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30113" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30113" onClick="toggleMenuBody '30113'">Home Phone Activations</div><div class="clsMenuBody" id="mnuBody_30113"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30113','20205','http://www.vonage.com/activate','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20205" parentid="30113"><span>Vonage Activation</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30115" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30115" onClick="toggleMenuBody '30115'">Satellite TV Activations</div><div class="clsMenuBody" id="mnuBody_30115"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30115','20210','http://retailer.directv.com','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20210" parentid="30115"><span>DIRECTV</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30016" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30016" onClick="toggleMenuBody '30016'">Stores</div><div class="clsMenuBody" id="mnuBody_30016"><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30016','30051','Cash Office'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30051" parentid="30016"><span>Cash Office</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30016','30145','Foot Traffic'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30145" parentid="30016"><span>Foot Traffic</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30016','30053','Point of Sale'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30053" parentid="30016"><span>Point of Sale</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30016','30081','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30081" parentid="30016"><span>Reports</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30051" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30051" onClick="toggleMenuBody '30051'">Cash Office</div><div class="clsMenuBody" id="mnuBody_30051"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30051','10151','Accounting/BonusBucks/CardHistory.aspx','Gift Card Transactions','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10151" parentid="30051"><span>Gift Card Transactions</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30145" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30145" onClick="toggleMenuBody '30145'">Foot Traffic</div><div class="clsMenuBody" id="mnuBody_30145"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30145','15374','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fFoot+Traffic+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15374" parentid="30145"><span>Foot Traffic Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30145','15410','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fFoot+Traffic+Sales+Metric&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1600,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15410" parentid="30145"><span>Foot Traffic Sales Metric</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30053" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30053" onClick="toggleMenuBody '30053'">Point of Sale</div><div class="clsMenuBody" id="mnuBody_30053"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30053','10370','https://cis-devex.bmusanet.brandsmartusa.com/POS/GMPriceChanges.aspx','GM Price Changes','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_10370" parentid="30053"><span>GM Price Changes</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30081" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30081" onClick="toggleMenuBody '30081'">Reports</div><div class="clsMenuBody" id="mnuBody_30081"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','15272','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fAsset+Protection%2fActive+Badge+Swipes&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15272" parentid="30081"><span>Active Badge Swipes</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','10163','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fCashier+Feedback+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10163" parentid="30081"><span>Cashier Feedback Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','15300','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fActive+GE+Promos&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15300" parentid="30081"><span>GE Active Promos </span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','10199','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fControl+Reports%2fGE+Quick+Screens&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10199" parentid="30081"><span>GE Quick Screen</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','15198','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fHD+Provider+Sales&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15198" parentid="30081"><span>HD Provider Sales</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','15446','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fISP+Packed+Timeframe&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15446" parentid="30081"><span>ISP Packed Timeframe</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30081','15445','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fStores%2fISP+Packed+Timeframe+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15445" parentid="30081"><span>ISP Packed Timeframe Detail</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30038" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30038" onClick="toggleMenuBody '30038'">Training</div><div class="clsMenuBody" id="mnuBody_30038"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30038','15476','https://bm1.sharepoint.com/sites/training/SitePages/DAYFORCE-TRAINING-RESOURCES.aspx','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1100,height=650,center=1','0','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15476" parentid="30038"><span>Dayforce Training</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30038','20224','\\psflpkrn\Documentation\BMUSA_Kronos Scheduling Guide.pdf','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20224" parentid="30038"><span>Kronos Training - Scheduling Guide</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30038','20225','\\psflpkrn\Documentation\BMUSA_Kronos Timecard Edits Guide.pdf','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20225" parentid="30038"><span>Kronos Training - Timecard Edits Guide</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30038','20240','https://web.microsoftstream.com/browse?view=channel','channelmode=no,directories=no,fullscreen=no,location=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=yes,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20240" parentid="30038"><span>Merchant Videos Channels</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30038','30100','Cell Phone Training'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30100" parentid="30038"><span>Cell Phone Training</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30100" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30100" onClick="toggleMenuBody '30100'">Cell Phone Training</div><div class="clsMenuBody" id="mnuBody_30100"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30100','20120','https://university.wireless.att.com/secure/culogon.html','channelmode=no,directories=no,fullscreen=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=yes,toolbar=no,width=700,height=500','0','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_20120" parentid="30100"><span>AT&amp;T Training</span></span></span></div></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30094" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30094" onClick="toggleMenuBody '30094'">Warehouse</div><div class="clsMenuBody" id="mnuBody_30094"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="NavigateTo '30094','15207','https://cis-devex.bmusanet.brandsmartusa.com/Warehouse/RmaReceiving.aspx','ATG - RMA Receiving','1'"><span class="clsMenuActionBullet clsMenuText" id="mnuIte_15207" parentid="30094"><span>ATG - RMA Receiving</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30094','10227','Merchants/Inventory/ReviseUPC.aspx','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=600,height=400,center=1','1','0'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_10227" parentid="30094"><span>Revise UPC</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30094','30101','Reports'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30101" parentid="30094"><span>Reports</span></span></span><span language="vbscript" class="clsMenuItem" onClick="showSubMenu '30094','30107','Store Transfers'"><span onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuFolderBullet clsMenuText" id="mnuIte_30107" parentid="30094"><span>Store Transfers</span></span></span></div><div openmenuid="" class="clsMenuGroup" id="mnu_30101" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30101" onClick="toggleMenuBody '30101'">Reports</div><div class="clsMenuBody" id="mnuBody_30101"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30101','15096','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fItem+Allocation&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15096" parentid="30101"><span>Item Allocation</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30101','15473','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fMerchandising%2fReceiving%2fReceiving%20Report%20No%20Cost&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15473" parentid="30101"><span>Receiving Report No Cost</span></span></span></div></div><div openmenuid="" class="clsMenuGroup" id="mnu_30107" style="display:none;"><div language="vbscript" class="clsMenuTitle clsMenuTitleHide" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" id="mnuTitle_30107" onClick="toggleMenuBody '30107'">Store Transfers</div><div class="clsMenuBody" id="mnuBody_30107"><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15110','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fOpen+Store+Transfer&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15110" parentid="30107"><span>Open Store Transfer </span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15104','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+Detail&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15104" parentid="30107"><span>Transfer Detail</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15107','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+Detail+by+Brand+Model&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15107" parentid="30107"><span>Transfer Detail by Brand Model</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15109','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+From+To+Location&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15109" parentid="30107"><span>Transfer From To Location</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15103','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+Summary+By+Date&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15103" parentid="30107"><span>Transfer Summary</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15106','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+From+Location&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15106" parentid="30107"><span>Transfers From</span></span></span><span language="vbscript" onmouseover="me.style.textdecoration='underline'" onmouseout="me.style.textdecoration=''" class="clsMenuItem" onClick="OpenWindow '30107','15105','https://reports.bmusanet.brandsmartusa.com/ReportServer/Pages/ReportViewer.aspx?%2fBMCIS+Reports%2fInventory%2fTransfer+To+Location&amp;rs:Command=Render','channelmode=no,directories=no,location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,width=1700,height=600,center=1','1','1'"><span class="clsMenuModalBullet clsMenuText" id="mnuIte_15105" parentid="30107"><span>Transfers To</span></span></span></div></div></div></span>
+								</div>
+							</td>
+							<td class="clsCanvasCell">
+								<iframe id="ifCanvas" frameborder="0" height="100%" width="100%"></iframe>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<iframe frameborder="0" src="CisCommon/Loading.htm" style="DISPLAY:none;Z-INDEX:150;LEFT:1px;WIDTH:202px;POSITION:absolute;TOP:1px;HEIGHT:79px" id="ifLoading"></iframe>
+		<img id="imgMario" style="position:absolute;display:none;" src="Resource/Images/Icons/Mario.gif" alt="Mario" />
+		<img id="imgGoomba0" style="position:absolute;display:none;" src="Resource/Images/Icons/goomba.gif" alt="Goomba" />
+		<img id="imgGoomba1" style="position:absolute;display:none;" src="Resource/Images/Icons/goomba.gif" alt="Goomba" />
+		<img id="imgGoomba2" style="position:absolute;display:none;" src="Resource/Images/Icons/goomba.gif" alt="Goomba" />
+	</body>
+</HTML>
