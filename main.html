@@ -54,7 +54,7 @@
 		return vValue.trim().length == 0;
 	}
 
-	Function IsPortraitMode{
+	function IsPortraitMode{
 		return window.screen.width < window.screen.height;
 	}
 
@@ -115,11 +115,13 @@
 		oXmlHttp.setRequestHeader("Content-Type", "text/xml; charset=utf-8");
 		oXmlHttp.send(CreateGenericSoapEnvelope(MethodName, Params));
 	}
+	function CreateObjectDomDocument(){
+		return document.implementation.createDocument("","");
+	}
 	function ExecSoapMethod(ServiceUrl, Namespace, MethodName, Params){
 		var oXmlHttp, oXmlRespDoc, oRtrnValNode;
 		var sXmlEnv;
 		
-		var return = "";
 		
 		var oXmlHttp = CreateObject();
 		oXmlHttp.open("POST", ServiceUrl, False);
@@ -137,29 +139,26 @@
 		}
 		
 		if (!Blank(sXmlEnv) ){
-			var oXmlRespDoc = CreateObject("MSXML2.DOMDOCUMENT");//research
-			oXmlRespDoc.validateOnParse = false;
-			oXmlRespDoc.resolveExternals = false;
-			oXmlRespDoc.loadXML sXmlEnv;
+			var parser = new DOMParser();
 			
-			'- Get Result Text
-			If(oXmlRespDoc.parseError = 0) Then
-				Set oRtrnValNode = oXmlRespDoc.selectSingleNode("//" & MethodName & "Result")
-				If Not(oRtrnValNode Is Nothing) Then
-					ExecSoapMethod = oRtrnValNode.Text
-					if(Blank(ExecSoapMethod)) then
-						window.clipboardData.setData "text", sXmlEnv
-					end if
-				else
-					window.clipboardData.setData "text", sXmlEnv
-				End If
-			End If
-		End If
-		
-		'- Clean Up
-		Set oRtrnValNode = Nothing
-		Set oXmlRespDoc = Nothing
-		Set oXmlHttp = Nothing
+			var xmlDoc = "";
+			try{
+				xmlDoc =parser.parseFromString(sXmlEnv,"text/xml");
+			}catch(ex){
+				return "";
+			}
+			
+			var oRtrnValNode = xmlDoc.selectSingleNode("//" + MethodName + "Result");
+			if (typeof oRtrnValNode !="undefined") {
+				if(Blank(oRtrnValNode.Text)) {
+					window.clipboardData.setData("text", sXmlEnv);
+				}
+				return oRtrnValNode.Text;
+			}
+			else{
+				window.clipboardData.setData ("text", sXmlEnv);
+			}
+		}
 	}
 	
 </script>
