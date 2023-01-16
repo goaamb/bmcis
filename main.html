@@ -370,14 +370,16 @@
 	function COM_HideLoadingTimeout(){
 		window.setTimeout("COM_HideLoading",500);
 	}
+	function ShowEmptyResponse(){
+		alert( "The Server was unable to process your request at this time.  Please submit your request again.");
+	}
+	sub ShowEmptyResponse(){
+		alert("The Server was unable to process your request at this time.  Please submit your request again.");
+	}
+	function GetEmptyResponse(){
+		return (confirm("The Server was unable to process your request at this time.  Would you like to resubmit your request?")==true)
+	}
 </script>
-
-	sub ShowEmptyResponse()
-		msgbox "The Server was unable to process your request at this time.  Please submit your request again.",vbInformation,"Unable to Process Request"
-	end sub
-	function GetEmptyResponse()
-		GetEmptyResponse =(MsgBox("The Server was unable to process your request at this time.  Would you like to resubmit your request?",vbYesNo,"Resubmit Request") = VbYes)
-	end function
 	
 	'- NUGGET Show/Hide
 	sub ToggleNugget(oEvent)
