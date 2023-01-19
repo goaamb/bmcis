@@ -379,91 +379,80 @@
 	function GetEmptyResponse(){
 		return (confirm("The Server was unable to process your request at this time.  Would you like to resubmit your request?")==true)
 	}
-</script>
-	
-	'- NUGGET Show/Hide
-	sub ToggleNugget(oEvent)
-		dim oCaller, oTarget
+	function ToggleNugget(oEvent){
+		var oCaller, oTarget;
 		
-		if(bMutex) then exit sub
-		set oCaller = oEvent.srcElement
-		set oTarget = oCaller.parentElement
-		'- make sure you have a ref to the row element
-		while(UCase(oTarget.tagName) <> "TR")
-			set oTarget = oTarget.parentElement
-		wend
-		'- set target to parent row first cell
-		set oCaller = oTarget.firstChild
-		'- get a ref to the next row
-		set oTarget = oTarget.nextSibling
-		'- update styles
-		if not(oTarget is nothing) then
-			if(LCase(oTarget.style.display) = "none") then
-				oTarget.style.display = "block"
-				oCaller.className = "NugHeadMinusWhBl"
-			else
-				oTarget.style.display = "none"
-				oCaller.className = "NugHeadPlusWhBl"
-			end if
-		else
-			msgbox "Unable to locate the Section to Toggle Display on.",vbExclamation,"Error"
-		end if
-		'- clean up
-		set oTarget = nothing
-		set oCaller = nothing
-	end sub
-	
-	sub MaxLength(oEvent,iMaxLen)
-		dim iKeyCode
-		iKeyCode = oEvent.keyCode
-		if(len(oEvent.srcElement.value) > iMaxLen-1)then
-			if not(iKeyCode=8) and not(iKeyCode>127) then
-				oEvent.cancelBubble = true
-				oEvent.returnValue = false
-			end if
-		end if
-	end sub
-	
-	sub PasteMaxLength(oEvent,iMaxLen)
-		dim iClipLen, iFieldLen
+		if(bMutex) { return;}
+		oCaller = oEvent.srcElement;
+		oTarget = oCaller.parentElement;
+		while(UCase(oTarget.tagName) <> "TR"){
+			oTarget = oTarget.parentElement;
+		}
+		oCaller = oTarget.firstChild;
+		oTarget = oTarget.nextSibling;
+		if (typeof oTarget !="undefined") {
+			if(LCase(oTarget.style.display) == "none"){
+				oTarget.style.display = "block";
+				oCaller.className = "NugHeadMinusWhBl";
+			}
+			else{
+				oTarget.style.display = "none";
+				oCaller.className = "NugHeadPlusWhBl";
+			}
+		}
+		else{
+			alert("Unable to locate the Section to Toggle Display on.");
+		}
 		
-		iFieldLen = len(oEvent.srcElement.value)
-		iClipLen = len(window.clipboardData.getData("text"))
+		set oTarget = nothing;
+		set oCaller = nothing;
+	}
+	function MaxLength(oEvent,iMaxLen){
+		var iKeyCode;
+		iKeyCode = oEvent.keyCode;
+		if(oEvent.srcElement.value.length() > iMaxLen-1){
+			if ((iKeyCode!=8) && (iKeyCode>127)) {
+				oEvent.cancelBubble = true;
+				oEvent.returnValue = false;
+			}
+		}
+	}
+	function PasteMaxLength(oEvent,iMaxLen){
+		var iClipLen, iFieldLen;
 		
-		if(iFieldLen + iClipLen > iMaxLen)then
-			if(iFieldLen < iMaxLen)then
-				oEvent.srcElement.value = oEvent.srcElement.value + left(window.clipboardData.getData("text"),iMaxLen-iFieldLen)
-			end if
+		iFieldLen = oEvent.srcElement.value.length();
+		iClipLen = window.clipboardData.getData("text").length();
+		
+		if((iFieldLen + iClipLen) > iMaxLen){
+			if(iFieldLen < iMaxLen){
+				oEvent.srcElement.value = oEvent.srcElement.value + window.clipboardData.getData("text").substring(0,iMaxLen-iFieldLen);
+			}
 			oEvent.cancelBubble = true
 			oEvent.returnValue = false
-		end if
-	end sub
-	
-	sub COM_TabField(oCaller, sTargetId, oEvent)
-		dim iMaxLen
-		iMaxLen = NullHandler(oCaller.getAttribute("maxlength"),false)
-		if(IsNumeric(iMaxLen))then
-			if(oEvent.keyCode <> 9 and oEvent.keyCode <> 16)then
-				if(len(oCaller.value) >= iMaxLen)then
-					COM_TextboxFocus sTargetId, false
-				end if
-			end if
-		end if
-	end sub
-	
-	function COM_ValidateEmail(sEmail)
-		dim bValid
-		dim sValidChars, sChar
-		dim arrEmail
+		}
+	}
+	function COM_TabField(oCaller, sTargetId, oEvent){
+		var iMaxLen;
+		iMaxLen = NullHandler(oCaller.getAttribute("maxlength"),false);
+		if(IsNumeric(iMaxLen)){
+			if(oEvent.keyCode != 9 && oEvent.keyCode != 16){
+				if(oCaller.value.length() >= iMaxLen){
+					COM_TextboxFocus(sTargetId, false);
+				}
+			}
+		}
+	}
+	function COM_ValidateEmail(sEmail){
+		var bValid,sValidChars, sChar,arrEmail;
 		
-		sValidChars = "abcdefghijklmnopqrstuvwxyz.-_@0123456789"
-		bValid = false
-		arrEmail = Split(sEmail, "@")
-		'- perform checks
-		if(UBound(arrEmail) = 1)then
-			if(Len(arrEmail(0)) > 0 or Len(arrEmail(1)) > 3)then
-				if(Left(arrEmail(0),1) <> ".")then
-					if(Right(arrEmail(1),1) <> "." and Right(arrEmail(1),2) <> "..")then
+		sValidChars = "abcdefghijklmnopqrstuvwxyz.-_@0123456789";
+		bValid = false;
+		arrEmail = sEmail.split("@");
+		if(arrEmail.length() = 1){
+			if(arrEmail(0).length() > 0 || arrEmail(1).length() > 3){
+				if(arrEmail(0).substring(0,1) <> "."){
+					//unfinished
+					if(arrEmail(1).substring(1) <> "." and Right(arrEmail(1),2) <> "..")then
 						if(InStr(1,arrEmail(1),".") > 0)then
 							if(InStr(1,arrEmail(1),"_") = 0)then
 								if(InStr(1,sEmail,"@.") = 0)then
@@ -474,9 +463,9 @@
 							end if
 						end if
 					end if
-				end if
-			end if
-		end if
+				}
+			}
+		}
 		'- loop through and check characters
 		if(bValid = true)then
 			for iPos = 1 to len(sEmail)
@@ -488,7 +477,11 @@
 		end if
 		'- set return
 		COM_ValidateEmail = bValid
-	end function
+	}
+</script>
+	
+	
+	
 	
 	function COM_Unique()
 		COM_Unique = Year(Now()) & Month(Now()) & Day(Now()) & Hour(Now()) & Minute(Now()) & Second(Now())
