@@ -385,7 +385,7 @@
 		if(bMutex) { return;}
 		oCaller = oEvent.srcElement;
 		oTarget = oCaller.parentElement;
-		while(UCase(oTarget.tagName) <> "TR"){
+		while(oTarget.tagName.toUpperCase() != "TR"){
 			oTarget = oTarget.parentElement;
 		}
 		oCaller = oTarget.firstChild;
@@ -452,77 +452,64 @@
 			if(arrEmail(0).length() > 0 || arrEmail(1).length() > 3){
 				if(arrEmail(0).substring(0,1) <> "."){
 					//unfinished
-					if(arrEmail(1).substring(1) <> "." and Right(arrEmail(1),2) <> "..")then
-						if(InStr(1,arrEmail(1),".") > 0)then
-							if(InStr(1,arrEmail(1),"_") = 0)then
-								if(InStr(1,sEmail,"@.") = 0)then
-									if(InStr(1,sEmail,"..") = 0)then
-										bValid = true
-									end if
-								end if
-							end if
-						end if
-					end if
+					if(arrEmail(1).substring(1) <> "." && arrEmail(1).substring(2) != ".."){
+						if(arrEmail(1).indexOf(".") > 0){
+							if(arrEmail(1).indexOf("_") == 0){
+								if(sEmail.indexOf("@.") == 0){
+									if(sEmail.indexOf("..") == 0){
+										bValid = true;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
-		'- loop through and check characters
-		if(bValid = true)then
-			for iPos = 1 to len(sEmail)
-				sChar = LCase(Mid(sEmail,iPos,1))
-				if(InStr(1,sValidChars,sChar) = 0)then
-					bValid = false
-				end if
-			next
-		end if
-		'- set return
-		COM_ValidateEmail = bValid
+		if(bValid){
+			for( var iPos = 1; iPos<sEmail;i++){
+				sChar = sEmail.substring(iPos,1).toLowerCase();
+				if(sValidChars.indexOf(sChar) == 0){
+					bValid = false;
+				}
+			}
+		}
+		return bValid;
 	}
-</script>
-	
-	
-	
-	
-	function COM_Unique()
-		COM_Unique = Year(Now()) & Month(Now()) & Day(Now()) & Hour(Now()) & Minute(Now()) & Second(Now())
-	end function
-	
-	function COM_CancelEvent()
-		window.event.returnValue = ""
-		window.event.cancelBubble = true
-	end function
-	
-	sub COM_ToggleTitlebar(oEvent)
-		dim oCaller, oTarget
-		dim sDisplay
 		
-		if(bMutex) then exit sub
+	function COM_Unique(){
+		var now=new Date(Date.now());
+		return now.getYear() + now.getMonth() + now().getDay() + Date.now().getHour() + Date.now().getMinute() + Date.now().getSecond();
+	}
+	function COM_CancelEvent(){
+		window.event.returnValue = "";
+		window.event.cancelBubble = true;
+	}
+	
+	function COM_ToggleTitlebar(oEvent){
+		var oCaller, oTarget, sDisplay;
 		
-		set oCaller = oEvent.srcElement
-		if(lCase(oCaller.className) = "titlebarminus")then
-			oCaller.className = "TitlebarPlus"
-			sDisplay = "block"
-		else
-			oCaller.className = "TitlebarMinus"
-			sDisplay = "none"
-		end if
+		if(bMutex){return;}
 		
-		'- make sure you have a ref to the table element
-		set oTarget = oCaller.parentElement
-		while(UCase(oTarget.tagName) <> "TABLE")
-			set oTarget = oTarget.parentElement
-		wend
+		oCaller = oEvent.srcElement;
+		if(oCaller.className.toLowerCase() == "titlebarminus"){
+			oCaller.className = "TitlebarPlus";
+			sDisplay = "block";
+		}
+		else{
+			oCaller.className = "TitlebarMinus";
+			sDisplay = "none";
+		}
 		
-		'- get a ref to the next row
-		for i=1 to oTarget.Rows.Length - 1
-			oTarget.Rows(i).style.display = sDisplay
-		next
-		
-		'- clean up
-		set oTarget = nothing
-		set oCaller = nothing
-	end sub
-</script>
+		oTarget = oCaller.parentElement;
+		while(oTarget.tagName.toUpperCase() != "TABLE"){
+			oTarget = oTarget.parentElement;
+		}
+		for (var i=1 ;i< oTarget.Rows.Length;i++){
+			oTarget.Rows(i).style.display = sDisplay;
+		}
+	}
+		</script>
 		<script language="javascript" type="text/javascript" src="Resource/Scripts/Game.js"></script>
 		<script language="vbscript" type="text/vbscript">
 			const g_csBaseUrl = ""
