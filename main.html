@@ -517,27 +517,41 @@
 	g_csClientIp = "Unknown";
 	g_csClientMachine = "Unknown";
 	g_bHideMenuAfterNav = true;
+	function document_onselectstart(){
+		if(window.event.srcElement.tagName != "INPUT"){
+			return false;
+		}
+		return true;
+	}
+	function document_onkeydown(){
+		if(window.event.keyCode == 116){
+			window.event.keyCode = 0;
+			window.event.cancelBubble = true;
+			return false;
+		}
+		return true;
+	}
+	function document_onselectstart(){
+		if(window.event.srcElement.tagName != "INPUT"){
+			return false;
+		}
+	}
+	function document_onkeydown(){
+		if(window.event.keyCode == 116){
+			window.event.keyCode = 0;
+			window.event.cancelBubble = true;
+			return false;
+		}
+		return true
+	}
+	if (window.location!=window.top.location){
+		window.top.location = window.location;
+	}
 	</script>
 		<script language="vbscript" type="text/vbscript">
-			function document_onselectstart()
-				if(window.event.srcElement.tagName <> "INPUT")then
-					document_onselectstart = false
-				end if
-			end function
 			
-			function document_onkeydown()
-				if(window.event.keyCode = 116)then
-					'- disable F5
-					window.event.keyCode = 0
-					window.event.cancelBubble = true
-					document_onkeydown = false
-				end if
-			end function
 			
-			'- always on top
-			if not(window.location=window.top.location)then
-				window.top.location = window.location
-			end if
+			
 			
 			sub SetPageTitle(sTitle)
 				document.getElementById("dvCanvasTitle").innerHtml = sTitle
