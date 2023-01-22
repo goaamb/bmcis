@@ -510,19 +510,15 @@
 	}
 		</script>
 		<script language="javascript" type="text/javascript" src="Resource/Scripts/Game.js"></script>
+	<script language="javascript" type="text/javascript">
+	var g_csBaseUrl = "";
+	var g_csHighlightColor = "#000000"
+	var g_bHideMenuAfterNav, g_bClickMutex, g_oMenuSrch, g_csClientIp, g_csClientMachine;
+	g_csClientIp = "Unknown";
+	g_csClientMachine = "Unknown";
+	g_bHideMenuAfterNav = true;
+	</script>
 		<script language="vbscript" type="text/vbscript">
-			const g_csBaseUrl = ""
-			const g_csHighlightColor = "#000000"
-			dim g_bHideMenuAfterNav
-			dim g_bClickMutex
-			dim g_oMenuSrch
-			dim g_csClientIp, g_csClientMachine
-			
-			g_csClientIp = "Unknown"
-			g_csClientMachine = "Unknown"
-			
-			g_bHideMenuAfterNav = true
-			
 			function document_onselectstart()
 				if(window.event.srcElement.tagName <> "INPUT")then
 					document_onselectstart = false
