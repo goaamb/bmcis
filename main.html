@@ -40,7 +40,7 @@
 
 	function NullHandler(vValue, bTrim){
 		if (vValue!=null){
-			if(bTrim = true){
+			if(bTrim){
 				return vValue.trim();
 			}
 			else{
@@ -54,7 +54,7 @@
 		return vValue.trim().length == 0;
 	}
 
-	function IsPortraitMode{
+	function IsPortraitMode(){
 		return window.screen.width < window.screen.height;
 	}
 
@@ -189,7 +189,7 @@
 			oXmlRespDoc.loadXML(sXmlEnv);
 			if(oXmlRespDoc.parseError == 0) {
 				oRtrnValNode = oXmlRespDoc.selectSingleNode("//" & MethodName + "Result");
-				If (oRtrnValNode != "undefined") {
+				if (oRtrnValNode != "undefined") {
 					retorno = oRtrnValNode.Text;
 					if(Blank(ExecuteSoapMethod)) {
 						window.clipboardData.setData("text", sXmlEnv);
@@ -215,6 +215,7 @@
             			if (value instanceof Date) {
                				return !isNaN(value.getTime());
             			}
+            break;
         		default:
 	            	return false;
     		}
@@ -227,7 +228,7 @@
 				if(arrDate(0).length() < 3 && arrDate(0).length() > 0 && IsNumeric(arrDate(0))){
 					if(arrDate(1).length() < 3 && arrDate(1).length() > 0 && IsNumeric(arrDate(1))){
 						if(arrDate(2).length() == 4){
-							return = isDate(strValue);
+							return isDate(strValue);
 						}
 					}
 				}
@@ -244,7 +245,7 @@
 		iHeight = 0;
 		if (typeof object !="undefined") {
 			oParent = object.offsetParent;
-			While(typeof oParent !="undefined"){
+			while(typeof oParent != "undefined"){
 				iHeight = iHeight + oParent.offsetTop;
 				oParent = oParent.offsetParent;					
 			}
@@ -273,7 +274,7 @@
 			if(sTemp.length() == 7) {
 				sTemp = sTemp.substring(0,3) + "-" + sTemp.substring(7,4);
 			}
-			else
+			else{
 				return sTemp;
 			}
 		}	
@@ -307,10 +308,10 @@
 				if(iKeyCode==46 || iKeyCode==8 || iKeyCode==9 ||(iKeyCode>36 && iKeyCode <41) || iKeyCode==27){ 
 					return true;
 				}
-				elseif(iKeyCode >= 37 || iKeyCode <=40){
+				else if(iKeyCode >= 37 || iKeyCode <=40){
 					return true;
 				}
-				elseif(iKeyCode==16 || iKeyCode==17 || iKeyCode==35 || iKeyCode==36 || iKeyCode==45){
+				else if(iKeyCode==16 || iKeyCode==17 || iKeyCode==35 || iKeyCode==36 || iKeyCode==45){
 					return true;
 				}
 				else{
@@ -332,13 +333,13 @@
 			if(iKeyCode==46 || iKeyCode==8 || iKeyCode==9 || iKeyCode==111 || iKeyCode==191 || iKeyCode == 27){ 
 				return true;
 			}
-			elseif(iKeyCode >= 37 and iKeyCode <=40){
+			else if(iKeyCode >= 37 && iKeyCode <=40){
 				return true;
 			}
-			elseif(iKeyCode==110){
+			else if(iKeyCode==110){
 				oEvent.srcElement.value = oEvent.srcElement.value + "/";
 			}
-			elseif(iKeyCode==16 || iKeyCode==17 || iKeyCode==35 || iKeyCode==36 || iKeyCode==45){
+			else if(iKeyCode==16 || iKeyCode==17 || iKeyCode==35 || iKeyCode==36 || iKeyCode==45){
 				return true;
 			}
 		}
@@ -369,12 +370,12 @@
 		}
 	}
 	function COM_HideLoadingTimeout(){
-		window.setTimeout("COM_HideLoading",500);
+		setTimeout(COM_HideLoading,500);
 	}
 	function ShowEmptyResponse(){
 		alert( "The Server was unable to process your request at this time.  Please submit your request again.");
 	}
-	sub ShowEmptyResponse(){
+	function ShowEmptyResponse(){
 		alert("The Server was unable to process your request at this time.  Please submit your request again.");
 	}
 	function GetEmptyResponse(){
@@ -404,9 +405,6 @@
 		else{
 			alert("Unable to locate the Section to Toggle Display on.");
 		}
-		
-		set oTarget = nothing;
-		set oCaller = nothing;
 	}
 	function MaxLength(oEvent,iMaxLen){
 		var iKeyCode;
@@ -449,9 +447,9 @@
 		sValidChars = "abcdefghijklmnopqrstuvwxyz.-_@0123456789";
 		bValid = false;
 		arrEmail = sEmail.split("@");
-		if(arrEmail.length() = 1){
+		if(arrEmail.length() == 1){
 			if(arrEmail(0).length() > 0 || arrEmail(1).length() > 3){
-				if(arrEmail(0).substring(0,1) <> "."){
+				if(arrEmail(0).substring(0,1) != "."){
 					//unfinished
 					if(arrEmail(1).substring(1) <> "." && arrEmail(1).substring(2) != ".."){
 						if(arrEmail(1).indexOf(".") > 0){
