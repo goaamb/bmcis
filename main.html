@@ -547,349 +547,270 @@
 	if (window.location!=window.top.location){
 		window.top.location = window.location;
 	}
+	function SetPageTitle(sTitle){
+		document.getElementById("dvCanvasTitle").innerHtml = sTitle;
+	}
+	function NavigateFrameToLocal(sName, sUrl){
+		SetPageTitle(sName);
+		HideMenu();
+		document.getElementByID("ifCanvas").src = g_csBaseUrl + "loading.aspx?page=" + sUrl;
+	}
+	function NavigateFrameTo(sName, sUrl){
+		SetPageTitle(sName);
+		HideMenu();
+		document.getElementByID("ifCanvas").src = sUrl;
+	}
+	function ToggleMenu(oToggleDiv){
+		var oMenuCont;
+		oMenuCont = document.getElementById("tdMenuContainer");
+		if(oMenuCont.style.display.toUpperCase()=="NONE"){
+			oMenuCont.style.display = "block";
+			oToggleDiv.innerText = "Hide Menu";
+			oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Expand.gif)";
+			oToggleDiv.title = "Click to Hide/Collapse" + vbcrlf + "the Main Menu.";
+		}
+		else{
+			oMenuCont.style.display = "none";
+			oToggleDiv.innerText = "Show Menu";
+			oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Contract.gif)";
+			oToggleDiv.title = "Click to Show/Expand" + vbcrlf + "the Main Menu.";
+		}
+	}
+	function ToggleHighlight(oCaller, bHighlight){
+		if(bHighlight==true){
+			oCaller.style.backgroundcolor = "#CEDBEF";
+			oCaller.style.color = "#000000";
+		}else{
+			oCaller.style.backgroundcolor = "";
+			oCaller.style.color = "";
+		}
+	}
+	function navToUnknownParent(MenuID, Url, Title, ShowLoading){
+		var sParentID, oMenuItem;
+				
+		oMenuItem = Find("mnuIte_" + MenuID);
+		if (typeof oMenuItem !="undefined") {
+			sParentID = oMenuItem.getAttribute("parentid");
+			navigateTo(sParentID,MenuID,Url,Title,ShowLoading);
+		}else{
+			alert( "Unable to locate Menu Item " + Title + "(" + MenuID + ")");
+		}
+	}
+	function navigateTop(url){
+		window.location.href = url;
+	}
+	function navigateTop(url){
+		window.location.href = url;
+	}
+	function navigateTo(ParentID, MenuID, Url, Title, ShowLoading){
+		var oMenuContainer, oMenuItem;
+		if (g_bClickMutex) { return;}
+		g_bClickMutex = true;
+		oMenuContainer = document.getElementByID("mnu_" + ParentID);
+		closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true));
+		oMenuContainer.setAttribute("openmenuid", MenuID);
+		oMenuItem = document.getElementByID("mnuIte_" + MenuID);
+		if(oMenuItem !="undefined"){
+			oMenuItem.style.color = g_csHighlightColor;
+		}
+		document.getElementByID("dvCanvasTitle").innerText = Title;
+		if(ShowLoading == "0"){
+			document.getElementByID("ifCanvas").src = Url;
+		}else{
+			document.getElementByID("ifCanvas").src = "LoadingRing.aspx?" + Url;
+		}
+		if(g_bHideMenuAfterNav) {
+			HideMenu();
+		}
+		g_bClickMutex = false;
+	}
+	function HideMenu(){
+		if(document.getElementById("tdMenuContainer").style.display.toUpperCase() != "NONE") {
+			ToggleMenu(document.getElementById("dvToggleMenu"));
+		}
+	}
+	function ShowMenu(){
+		if(document.getElementById("tdMenuContainer").style.display.toUpperCase() != "BLOCK") {
+			ToggleMenu(document.getElementById("dvToggleMenu"));
+		}
+	}
+	function OpenWindow(ParentID, MenuID, Link, Features, iShowLoading, Mulitple){
+		var oMenuContainer,oWindow, strUrl;
+				
+		if (g_bClickMutex ){return;}
+		g_bClickMutex = true;
+		oMenuContainer = document.getElementByID("mnu_" + ParentID);
+		closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true));
+		oMenuContainer.setAttribute("openmenuid", MenuID);
+		if(iShowLoading == 0){
+			strUrl = Link;
+		}else{
+			strUrl = "Loading.aspx?Page=" + Link;
+		}
+		if(Mulitple == "1"){
+			oWindow = window.open(strUrl, "_blank", Features);
+		}
+		else{
+			oWindow = window.open(strUrl, "win" + MenuID, Features);
+		}
+		try{
+			oWindow.focus();
+		}catch(ex){}
+		g_bClickMutex = false;
+	}
+	function closeSubMenu(MenuID){
+		var oMenu, sOpenMenuID;
+		oMenu = document.getElementByID("mnu_" + MenuID);
+		if (typeof oMenu =="undefined"){
+			oMenu.style.display = "none";
+			sOpenID = nullHandler(oMenu.getAttribute("openmenuid"),true);
+			if (!blank(sOpenID)){
+				oMenu.setAttribute("openmenuid","")
+				closeSubMenu(sOpenID);
+			}
+		}
+				
+		oMenu = document.getElementByID("mnuIte_" + MenuID);
+		if (typeof oMenu !="undefined") {
+			oMenu.style.color = "";
+		}
+	}
+	function showSubMenu(CallerParentID, MenuID, Title){
+		var oParentMenu, oSubMenu, oMenuItem;
+		if (g_bClickMutex){return;}
+		g_bClickMutex = true;
+		oSubMenu = document.getElementByID("mnu_" + MenuID);
+		if (typeof oSubMenu !="undefined") {
+			oMenuContainer = document.getElementByID("mnu_" + CallerParentID);
+			closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true));
+			oMenuContainer.setAttribute("openmenuid", MenuID);
+			oMenuItem = document.getElementByID("mnuIte_" + MenuID);
+			if (typeof oMenuItem !="undefined") {
+				oMenuItem.style.color = g_csHighlightColor;
+			}
+			oSubMenu.style.display = "block";
+			document.getElementByID("mnuTitle_" + MenuID).innerText = Title;
+			oSubMenu.scrollIntoView();
+		}
+		else{
+			alert ("The " + Title + " menu cannot be displayed because there are no Subitems for this Menu Item.");
+		}
+		window.event.cancelBubble = true
+		g_bClickMutex = false
+	}
+	function toggleMenuBody(MenuID){
+		var oMenuBodyDiv;
+				
+		if (g_bClickMutex) { return;}
+		g_bClickMutex = true;
+		oMenuBodyDiv = document.getElementByID("mnuBody_" + MenuID);
+		if (typeof oMenuBodyDiv !="undefined"){
+			if(nullHandler(oMenuBodyDiv.getAttribute("expanded"),true) == "0") {
+				oMenuBodyDiv.style.display = "block";
+				oMenuBodyDiv.setAttribute("expanded","1");
+				window.event.srcElement.className = "clsMenuTitle clsMenuTitleHide";
+			}
+			else{
+				oMenuBodyDiv.style.display = "none";
+				oMenuBodyDiv.setAttribute("expanded","0");
+				window.event.srcElement.className = "clsMenuTitle clsMenuTitleShow";
+			}
+		}
+		g_bClickMutex = false;
+	}
+	function ValidateScreenRes(){
+		var iWidth, iHeight;
+		iWidth = window.screen.width;
+		iHeight = window.screen.height;
+		if(iWidth < 1024){
+			alert( "The Minimum recommended Screen Resolution is 1024 by 768" + vbCrLf + vbCrLf + "Currently your Screen Resultion is: " + iWidth + " by " + iHeight & vbCrLf + vbcrlf + "If you would like your viewable screen area increased to" + vbcrlf + "reduce scrolling, please contact Support at 4164.")
+		}
+	}
+	function window_onLoad(){
+		g_bClickMutex = false;
+		g_oMenuSrch = window.createPopup();
+		ValidateScreenRes()
+		document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx";
+		SetToolTips();
+	}
+	function SetToolTips(){
+		Find("dvDesktopLink").title = "Click to Return to the BrandsMart" + vbCrLf + "Corportate Information Center Desktop";
+		Find("dvToggleMenu").title = "Click to Hide/Collapse" + vbcrlf + "the Main Menu";
+		Find("lnkName").title = "Click to Refresh Your Account Settings";
+	}
+	function GoToDesktop(){
+		closeSubMenu(nullHandler(Find("mnu_0").getAttribute("openmenuid"),true));
+		Find("dvCanvasTitle").innerText = "BMCIS Desktop"
+		ShowMenu();
+		document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx";
+	}
+	function showLoading(){
+		try{
+			document.getElementById("ifLoading").style.top = document.body.clientHeight/2 - 39;
+			document.getElementById("ifLoading").style.left = document.body.clientWidth/2 - 100;
+		}catch(ex){}
+		Find("ifLoading").style.display = "block";
+		try{
+			Find("ifLoading").focus()
+		}catch(ex){}
+	}
+	function hideLoading(){
+		Find("ifLoading").style.display = "none";
+	}
+	function hideLoadingTimeout(){
+		window.setTimeout(hideLoading,500);
+	}
+	function StartSearch(){
+		if (g_bClickMutex) { return;}
+		ShowLoading();
+		window.setTimeout(SubmitSearch,250);
+	}
+	function SubmitSearch(){
+		if( g_bClickMutex ){return;}
+		g_bClickMutex = true;
+		var sSrch, sXmlResult, oResultsDoc, oHtmlNode;
+		sSrch = document.getElementById("inSearch").value;
+		if (!blank(sSrch)){
+			sXmlResult = ExecuteSoapMethod("CisSystem/SrvCisSystem.asmx","Desktop_SearchMenu","<searchText>" + sSrch + "</searchText>");
+			if (!Blank(sXmlResult)){
+				g_oMenuSrch.Hide();
+				g_oMenuSrch.document.body.innerHtml = decodeHtml(sXmlResult);
+				g_oMenuSrch.show((document.body.clientWidth - 298), 77, 300, 270, document.body);
+			}
+			else{
+				alert( "Your search returned no results.")
+			}
+			document.getElementById("inSearch").value = "";
+		}
+		hideLoadingTimeout();
+		g_bClickMutex = false;
+	}
+	function NavigateFromResult(MenuID){
+		var oMenuItem, iParentID;
+		iParentID = MenuID;
+		while (iParentID!=0 || blank(iParentID)){
+			oMenuItem = document.getElementByID("mnuIte_" + iParentID);
+			if (typeof oMenuItem !="undefined") {
+				iParentID = nullHandler(oMenuItem.getAttribute("parentid"),true);
+				oMenuItem.click();
+			}
+			else{
+				iParentID = 0;
+			}
+		}
+		g_oMenuSrch.hide();
+	}
+	function ToggleFullScreen(bShowBanner){
+		if(bShowBanner == true){
+			document.getElementById("trBanner").style.display = "block";
+		}
+		else{
+			sDisplay = "none";
+			document.getElementById("tdMenuContainer").style.display = "none";
+			document.getElementById("trBanner").style.display = "none";
+		}
+	}
 	</script>
-		<script language="vbscript" type="text/vbscript">
-			
-			
-			
-			
-			sub SetPageTitle(sTitle)
-				document.getElementById("dvCanvasTitle").innerHtml = sTitle
-			end sub
-			
-			sub NavigateFrameToLocal(sName, sUrl)
-				SetPageTitle sName
-				HideMenu
-				document.getElementByID("ifCanvas").src = g_csBaseUrl & "loading.aspx?page=" & sUrl
-			end sub
-			
-			sub NavigateFrameTo(sName, sUrl)
-				SetPageTitle sName
-				HideMenu
-				document.getElementByID("ifCanvas").src = sUrl
-			end sub
-			
-			sub ToggleMenu(oToggleDiv)
-				dim oMenuCont
-				set oMenuCont = document.getElementById("tdMenuContainer")
-				if(uCase(oMenuCont.style.display)="NONE")then
-					oMenuCont.style.display = "block"
-					oToggleDiv.innerText = "Hide Menu"
-					oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Expand.gif)"
-					oToggleDiv.title = "Click to Hide/Collapse" & vbcrlf & "the Main Menu."
-				else
-					oMenuCont.style.display = "none"
-					oToggleDiv.innerText = "Show Menu"
-					oToggleDiv.style.backgroundimage = "url(Resource/Images/Buttons/Contract.gif)"
-					oToggleDiv.title = "Click to Show/Expand" & vbcrlf & "the Main Menu."
-				end if
-				set oMenuCont = nothing
-			end sub
-			
-			sub ToggleHighlight(oCaller, bHighlight)
-				if(bHighlight=true)then
-					oCaller.style.backgroundcolor = "#CEDBEF"
-					oCaller.style.color = "#000000"
-				else
-					oCaller.style.backgroundcolor = ""
-					oCaller.style.color = ""
-				end if
-			end sub
-			
-			public sub navToUnknownParent(MenuID, Url, Title, ShowLoading)
-				dim sParentID
-				dim oMenuItem
-				
-				set oMenuItem = Find("mnuIte_" & MenuID)
-				if not(oMenuItem is nothing) then
-					sParentID = oMenuItem.getAttribute("parentid")
-					call navigateTo(sParentID,MenuID,Url,Title,ShowLoading)
-				else
-					msgbox "Unable to locate Menu Item " & Title & "(" & MenuID & ")",vbCritical,"Menu Item Not Found"
-				end if
-			end sub
-			
-			public sub navigateTop(url)
-				window.location.href = url
-			end sub
-
-			public sub navigateTo(ParentID, MenuID, Url, Title, ShowLoading)
-				dim oMenuContainer
-				dim oMenuItem
-				
-				if g_bClickMutex then exit sub
-				g_bClickMutex = true
-				'- hide open menus
-				set oMenuContainer = document.getElementByID("mnu_" & ParentID)
-				'- does nothing if empty string passed in
-				call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
-				oMenuContainer.setAttribute "openmenuid", MenuID
-				set oMenuContainer = nothing
-				'- highlight selected
-				set oMenuItem = document.getElementByID("mnuIte_" & MenuID)
-				if not(oMenuItem is nothing) then
-					oMenuItem.style.color = g_csHighlightColor
-				end if
-				set oMenuItem = nothing
-				document.getElementByID("dvCanvasTitle").innerText = Title
-				
-				if(ShowLoading = "0") then
-					document.getElementByID("ifCanvas").src = Url
-				else
-					document.getElementByID("ifCanvas").src = "LoadingRing.aspx?" & Url
-				end if
-				
-				if(g_bHideMenuAfterNav) then
-					HideMenu
-				end if
-				
-				g_bClickMutex = false
-			end sub
-			
-			sub HideMenu
-				if(uCase(document.getElementById("tdMenuContainer").style.display) <> "NONE") then
-					ToggleMenu document.getElementById("dvToggleMenu")
-				end if
-			end sub
-			
-			sub ShowMenu
-				if(uCase(document.getElementById("tdMenuContainer").style.display) <> "BLOCK") then
-					ToggleMenu document.getElementById("dvToggleMenu")
-				end if
-			end sub
-			
-			sub OpenWindow(ParentID, MenuID, Link, Features, iShowLoading, Mulitple)
-				dim oMenuContainer,oWindow
-				dim strUrl
-				
-				if g_bClickMutex then exit sub
-				g_bClickMutex = true
-				'- hide open menus
-				set oMenuContainer = document.getElementByID("mnu_" & ParentID)
-				'- does nothing if empty string passed in
-				call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
-				oMenuContainer.setAttribute "openmenuid", MenuID
-				set oMenuContainer = nothing
-				
-				if(iShowLoading = 0)then
-					strUrl = Link
-				else
-					strUrl = "Loading.aspx?Page=" & Link
-				end if
-				
-				if(Mulitple = "1")then
-					set oWindow = window.open(strUrl, "_blank", Features)
-				else
-					set oWindow = window.open(strUrl, "win" & MenuID, Features)
-				end if
-				
-				on error resume next
-				oWindow.focus
-				on error goto 0
-				
-				set oWindow = nothing
-				g_bClickMutex = false
-			end sub
-			
-			sub closeSubMenu(MenuID)
-				dim oMenu
-				dim sOpenMenuID
-								
-				set oMenu = document.getElementByID("mnu_" & MenuID)
-				if not(oMenu is nothing) then
-					oMenu.style.display = "none"
-					sOpenID = nullHandler(oMenu.getAttribute("openmenuid"),true)
-					if not blank(sOpenID) then
-						oMenu.setAttribute "openmenuid",""
-						call closeSubMenu(sOpenID)
-					end if
-				end if
-				
-				set oMenu = document.getElementByID("mnuIte_" & MenuID)
-				if not(oMenu is nothing) then
-					oMenu.style.color = ""
-				end if
-				set oMenu = nothing
-			end sub
-			
-			sub showSubMenu(CallerParentID, MenuID, Title)
-				dim oParentMenu
-				dim oSubMenu
-				dim oMenuItem
-				
-				if g_bClickMutex then exit sub
-				g_bClickMutex = true
-				'- get ref to menu item to open
-				set oSubMenu = document.getElementByID("mnu_" & MenuID)
-				if not(oSubMenu is nothing) then
-					'- hide open menus
-					set oMenuContainer = document.getElementByID("mnu_" & CallerParentID)
-					'- does nothing if empty string passed in
-					call closeSubMenu(nullHandler(oMenuContainer.getAttribute("openmenuid"),true))
-					oMenuContainer.setAttribute "openmenuid", MenuID			
-					set oMenuContainer = nothing
-					
-					'- highlight selected
-					set oMenuItem = document.getElementByID("mnuIte_" & MenuID)
-					if not(oMenuItem is nothing) then
-						oMenuItem.style.color = g_csHighlightColor
-					end if
-					set oMenuItem = nothing
-					
-					oSubMenu.style.display = "block"
-					document.getElementByID("mnuTitle_" & MenuID).innerText = Title
-					oSubMenu.scrollIntoView
-			
-					'- clean up
-					set oSubMenu = nothing
-					set oParentMenu = nothing
-					set oMenuItem = nothing	
-				else
-					'- user has rights to menu group but no menu items in it
-					msgbox "The " & Title & " menu cannot be displayed because there are no Subitems for this Menu Item.",vbInformation,"Access"
-				end if
-				window.event.cancelBubble = true
-				g_bClickMutex = false
-			end sub
-			
-			sub toggleMenuBody(MenuID)
-				dim oMenuBodyDiv
-				
-				if g_bClickMutex then exit sub
-				g_bClickMutex = true
-					
-				set oMenuBodyDiv = document.getElementByID("mnuBody_" & MenuID)
-				if not(oMenuBodyDiv is nothing) then
-					if(nullHandler(oMenuBodyDiv.getAttribute("expanded"),true) = "0") then
-						oMenuBodyDiv.style.display = "block"
-						oMenuBodyDiv.setAttribute "expanded","1"
-						window.event.srcElement.className = "clsMenuTitle clsMenuTitleHide"
-					else
-						oMenuBodyDiv.style.display = "none"
-						oMenuBodyDiv.setAttribute "expanded","0"
-						window.event.srcElement.className = "clsMenuTitle clsMenuTitleShow"
-					end if
-				end if
-				
-				set oMenuBodyDiv = nothing
-				g_bClickMutex = false
-			end sub
-			
-			sub ValidateScreenRes
-				dim iWidth, iHeight
-				iWidth = window.screen.width
-				iHeight = window.screen.height
-				if(iWidth < 1024)then
-					MsgBox "The Minimum recommended Screen Resolution is 1024 by 768" & vbCrLf & vbCrLf & "Currently your Screen Resultion is: " & iWidth & " by " & iHeight & vbCrLf & vbcrlf & "If you would like your viewable screen area increased to" & vbcrlf & "reduce scrolling, please contact Support at 4164.",vbInformation,"Unrecommended Screen Resolution"
-				end if
-			end sub
-			
-			sub window_onLoad
-				g_bClickMutex = false
-				'- instantiate serach menu
-				Set g_oMenuSrch = window.createPopup
-				ValidateScreenRes
-				
-				document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx"
-			
-				SetToolTips
-			end sub
-			
-			sub SetToolTips()
-				Find("dvDesktopLink").title = "Click to Return to the BrandsMart" & vbCrLf & "Corportate Information Center Desktop"
-				Find("dvToggleMenu").title = "Click to Hide/Collapse" & vbcrlf & "the Main Menu"
-				Find("lnkName").title = "Click to Refresh Your Account Settings"
-			end sub
-			
-			sub GoToDesktop
-				'- does nothing if empty string passed in
-				call closeSubMenu(nullHandler(Find("mnu_0").getAttribute("openmenuid"),true))
-				Find("dvCanvasTitle").innerText = "BMCIS Desktop"
-				ShowMenu
-				document.getElementById("ifCanvas").src = "Loading.aspx?Page=CisSystem/Desktop/UserDesktop.aspx"
-			end sub
-			
-			sub showLoading()
-				on error resume next
-				document.getElementById("ifLoading").style.top = document.body.clientHeight/2 - 39
-				document.getElementById("ifLoading").style.left = document.body.clientWidth/2 - 100
-				on error goto 0
-			
-				Find("ifLoading").style.display = "block"
-				on error resume next
-				Find("ifLoading").focus
-				on error goto 0
-			end sub
-
-			sub hideLoading()
-				Find("ifLoading").style.display = "none"
-			end sub
-			sub hideLoadingTimeout()
-				window.setTimeout "hideLoading",500,"vbscript"
-			end sub
-			
-			sub StartSearch()
-				if g_bClickMutex then exit sub
-				call ShowLoading()
-				window.setTimeout "SubmitSearch",250,"vbscript"
-			end sub
-			
-			sub SubmitSearch()
-				if g_bClickMutex then exit sub
-				g_bClickMutex = true
-				
-				dim sSrch
-				dim sXmlResult
-				dim oResultsDoc
-				dim oHtmlNode
-				'dim iCounter
-				sSrch = document.getElementById("inSearch").value
-				if not blank(sSrch) then
-					sXmlResult = ExecuteSoapMethod("CisSystem/SrvCisSystem.asmx","Desktop_SearchMenu","<searchText>" & sSrch & "</searchText>")
-					if Not Blank(sXmlResult) then
-						g_oMenuSrch.Hide
-						g_oMenuSrch.document.body.innerHtml = decodeHtml(sXmlResult)
-						g_oMenuSrch.show(document.body.clientWidth - 298), 77, 300, 270, document.body
-					else
-						msgbox "Your search returned no results.",vbOkOnly,"Not Found"
-					end if
-					document.getElementById("inSearch").value = ""
-				end if
-				
-				hideLoadingTimeout
-				g_bClickMutex = false
-			end sub
-			
-			sub NavigateFromResult(MenuID)
-				dim oMenuItem
-				dim iParentID
-
-				iParentID = MenuID
-				while not(iParentID=0) or blank(iParentID)
-					set oMenuItem = document.getElementByID("mnuIte_" & iParentID)
-					if not(oMenuItem is nothing) then
-						iParentID = nullHandler(oMenuItem.getAttribute("parentid"),true)
-						oMenuItem.click
-					else
-						iParentID = 0
-					end if						
-				wend
-				'- clean up
-				set oMenuItem = nothing
-				g_oMenuSrch.hide
-			end sub
-			
-			public sub ToggleFullScreen(bShowBanner)
-				if(bShowBanner = true)then
-					document.getElementById("trBanner").style.display = "block"
-				else
-					sDisplay = "none"
-					document.getElementById("tdMenuContainer").style.display = "none"
-					document.getElementById("trBanner").style.display = "none"
-				end if
-			end sub
-		</script>
-		
 		<script language="javascript" type="text/javascript">
 			var g_chars = null;
 
